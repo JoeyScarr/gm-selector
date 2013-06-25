@@ -5,13 +5,6 @@
 		<link rel="stylesheet" type="text/css" href="css/lib/bootstrap.min.css">
 		<link rel="stylesheet" type="text/css" href="css/chart.css">
 		<link rel="stylesheet" type="text/css" href="css/main.css">
-    <script src="js/lib/angular.min.js"></script>
-    <script src="js/lib/15.d3.v3.min.js"></script>
-    <script src="js/lib/jquery-1.10.1.min.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/chart.js"></script>
-    <script src="js/controller.js"></script>
-    <script src="js/parsing.js"></script>
 		<title>Ground Motion Selector</title>
   </head>
   <body ng-controller="MainCtrl">
@@ -19,9 +12,22 @@
 			<h2>Ground Motion Selector</h2>
 			<hr />
       <input type="file" id="inputFileSelect" />
-      <hr />
-			<chart id="chart1" data="chart1Data" scale="linear" width="800px" height="400px"></chart>
+			<hr />
+			<div ng-repeat="chart in chartData" style="display:inline-block">
+				<chart id="'chart' + $index" data="chart" scale="linear" width="700px" height="400px"></chart>
+				<hr />
+			</div>
       <pre>{{parsedOutput}}</pre>
     </div>
+		
+		
+		<!-- Load scripts at the end -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.0.8/d3.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/chart.js"></script>
+    <script src="js/controller.js"></script>
+    <script src="js/parsing.js"></script>
   </body>
 </html>

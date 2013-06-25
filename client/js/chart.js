@@ -16,24 +16,26 @@ MOD_chart.directive('chart', function () {
 		restrict: 'E',
 		replace: true,
 		scope: {
-			data: '='
+			data: '=',
+			id: '='
 		},
 		compile: function compile(element, attrs) {
 			
 			var width = attrs.width || '100%';
 			var height = attrs.height || '620px';
-			var id = attrs.id || "mygraph";
 			var scale = attrs.scale || SCALE_LOG;
-			var htmlText = '<div id="' + id + '" style="position:relative;width:' + width + ';height:' + height + '"></div>'
+			var htmlText = '<div style="position:relative;display:inline-block;width:' + width + ';height:' + height + '"></div>'
 			element.replaceWith(htmlText);
 			
 			return function link(scope, element, attrs) {
+				element[0].id = scope.id;
+				var id = scope.id;
 				scope.$watch('data', function (newVal, oldVal) {
 					$('#' + id).empty();
 					
 					if (!!newVal && !!newVal.lines && newVal.lines.length > 0){
 						var discrete = $.map(newVal.lines, function(val, i) {
-							return val.isDiscrete;
+							return !!val.drawCircles;
 						});
 						var values = $.map(newVal.lines, function(val, i) {
 							if (val.isDiscrete) {
@@ -55,7 +57,7 @@ MOD_chart.directive('chart', function () {
 							return [val.name];
 						});
 						var colors = $.map(newVal.lines, function(val, i) {
-							return "red";
+							return [val.color];
 						});
 						
 						// Calculate limits.
@@ -653,9 +655,13 @@ MOD_chart.directive('chart', function () {
 								});
 						
 						// add a group of points for discrete line groups
+						var discreteColors = [];
 						linesGroupDiscrete = lines.enter().append("g")
 							.filter(function(d, i) {
-								return data.discrete[i];
+								if (!!data.discrete[i]) {
+									discreteColors.push(data.colors[i]);
+								}
+								return !!data.discrete[i];
 							})
 							.attr("class", function(d, i) {
 								return "line_group series_" + i;
@@ -681,7 +687,7 @@ MOD_chart.directive('chart', function () {
 								if (i == 0) {
 									lineFunctionSeriesIndex++;
 								}
-								return data.colors[lineFunctionSeriesIndex];
+								return discreteColors[lineFunctionSeriesIndex];
 							});
 						
 						

@@ -102,6 +102,19 @@ MOD_parsing.factory('inputReader', function() {
 					GCIMoutput.IMi[j].realizations.push([parseFloat(data[2*j+1]),parseFloat(data[2*j+2])]);
 				}
 			}
+				
+			// Precompute discrete CDFs for the realizations of each IMi.
+			for (var i = 0; i < numIMi; ++i) {
+				GCIMoutput.IMi[i].realizationCDF = [];
+				// First, sort in ascending order.
+				GCIMoutput.IMi[i].realizations.sort(function(a,b){return a[0]-b[0];});
+				// Then iterate over all realizations and count them.
+				var count = 0.0;
+				for (var j = 0; j < numIMiRealizations; ++j) {
+					count += 1.0;
+					GCIMoutput.IMi[i].realizationCDF.push([GCIMoutput.IMi[i].realizations[j][0],count/numIMiRealizations]);
+				}
+			}
 			
 			// Output the data structure.
 			return GCIMoutput;

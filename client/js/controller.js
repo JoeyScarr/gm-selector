@@ -4,7 +4,7 @@
 var app = angular.module('app');
 
 app.controller('MainCtrl', ['$scope', 'inputReader', function($scope, inputReader) {
-	$scope.parsedOutput = '{}';
+	$scope.parsedOutput = '';
 	
 	var xmin = Math.exp(-5.5);
 	var xmax = Math.exp(0.5);
@@ -12,20 +12,35 @@ app.controller('MainCtrl', ['$scope', 'inputReader', function($scope, inputReade
 		return 1.0 / Math.pow(x, 2);
 	};
 	
-	$scope.chart1Data = {
-		xAxisLabel: 'X Axis',
-		yAxisLabel: 'Y Axis',
-		lines: [{
-			"name": 'Test',
-			"isDiscrete": false,
-			"func": func,
-			"limits": {
-				xmin: xmin,
-				xmax: xmax,
-				ymin: Math.min(func(xmin),func(xmax)),
-				ymax: Math.max(func(xmin),func(xmax))
+	$scope.chartData = [];
+	
+	// Generates and returns charts for the parsed input data.
+	$scope.plot = function(data) {
+		var charts = [];
+		for (var i = 0; i < data.numIMi; ++i) {
+			var IMi = data.IMi[i];
+			var chart = {
+				xAxisLabel: IMi.name,
+				yAxisLabel: 'Cumulative Probability, CDF',
+				lines: [
+					{
+						'name': 'GCIM distribution',
+						'isDiscrete': true,
+						'data': IMi.GCIMvalues,
+						'color': 'red'
+					},
+					{
+						'name': 'Realizations',
+						'isDiscrete': true,
+						'drawCircles': true,
+						'data': IMi.realizationCDF,
+						'color': 'blue'
+					}
+				]
 			}
-		}]
+			charts.push(chart);
+		}
+		return charts;
 	};
 	
 	// Called when the user selects a new input file.
@@ -38,6 +53,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', function($scope, inputReade
 					$scope.$apply(function($scope) {
 						try {
 							var output = inputReader.parse(e.target.result);
+							$scope.chartData = $scope.plot(output);
 							
 							$scope.parsedOutput = JSON.stringify(output, null, 2);
 						} catch (err) {
