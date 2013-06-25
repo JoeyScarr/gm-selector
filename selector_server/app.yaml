@@ -1,16 +1,17 @@
-application: selector_server
+application: gm-selector
 version: 1
 runtime: python27
 api_version: 1
 threadsafe: yes
 
 handlers:
-- url: /favicon\.ico
-  static_files: favicon.ico
-  upload: favicon\.ico
+- url: /(.+)
+  static_files: client/\1
+  upload: client/(.+)
 
-- url: .*
-  script: main.app
+- url: /
+  static_files: client/index.html
+  upload: client/index.html
 
 libraries:
 - name: webapp2
