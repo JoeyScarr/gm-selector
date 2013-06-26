@@ -37,6 +37,9 @@ MOD_chart.directive('chart', function () {
 						var discrete = $.map(newVal.lines, function(val, i) {
 							return !!val.drawCircles;
 						});
+						var showLegend = $.map(newVal.lines, function(val, i) {
+							return val.showLegend == null ? true : val.showLegend;
+						});
 						var values = $.map(newVal.lines, function(val, i) {
 							if (val.isDiscrete) {
 								return [val.data];
@@ -101,6 +104,7 @@ MOD_chart.directive('chart', function () {
 								values: values,
 								extraPoints: extraPoints,
 								discrete: discrete,
+								showLegend: showLegend,
 								colors: colors,
 								scale: scale,
 								xAxisLabel: newVal.xAxisLabel,
@@ -242,13 +246,14 @@ MOD_chart.directive('chart', function () {
 					 */
 					var processDataMap = function(dataMap) {
 						// assign data values to plot over time
-						var dataValues = getRequiredVar(dataMap, 'values', "The data object must contain a 'values' value with a data array.")
-						var extraPoints = getRequiredVar(dataMap, 'extraPoints', "The data object must contain an 'extraPoints' value with a data array.")
+						var dataValues = getRequiredVar(dataMap, 'values', "The data object must contain a 'values' value with a data array.");
+						var extraPoints = getRequiredVar(dataMap, 'extraPoints', "The data object must contain an 'extraPoints' value with a data array.");
 						//var startTime = new Date(getRequiredVar(dataMap, 'start', "The data object must contain a 'start' value with the start time in milliseconds since epoch."))
 						//var endTime = new Date(getRequiredVar(dataMap, 'end', "The data object must contain an 'end' value with the end time in milliseconds since epoch."))
 						//var step = getRequiredVar(dataMap, 'step', "The data object must contain a 'step' value with the time in milliseconds between each data value.")		
-						var names = getRequiredVar(dataMap, 'names', "The data object must contain a 'names' array with the same length as 'values' with a name for each data value array.")	
-						var discrete = getRequiredVar(dataMap, 'discrete', "The data object must contain a 'discrete' array with the same length as 'values' stating whether each array is a discrete line.")		
+						var names = getRequiredVar(dataMap, 'names', "The data object must contain a 'names' array with the same length as 'values' with a name for each data value array.");
+						var discrete = getRequiredVar(dataMap, 'discrete', "The data object must contain a 'discrete' array with the same length as 'values' stating whether each array is a discrete line.");
+						var showLegend = getRequiredVar(dataMap, 'showLegend', "The data object must contain a 'showLegend' array with the same length as 'values' stating whether each line should have a legend entry.");
 						var displayNames = getOptionalVar(dataMap, 'displayNames', names);
 						var xAxisLabel = getOptionalVar(dataMap, 'xAxisLabel', '');
 						var yAxisLabel = getOptionalVar(dataMap, 'yAxisLabel', '');
@@ -311,6 +316,7 @@ MOD_chart.directive('chart', function () {
 							//"step" : step,
 							"names" : names,
 							"discrete": discrete,
+							"showLegend": showLegend,
 							"displayNames": displayNames,
 							"axis" : axis,
 							"colors": colors,
@@ -474,7 +480,7 @@ MOD_chart.directive('chart', function () {
 							x = d3.scale.pow().exponent(0.3).domain([calculateMinX(), calculateMaxX()]).range([0, w]).nice();	
 							numAxisLabels = data.numAxisLabelsPowerScale;
 						} else if(xScale == SCALE_LOG) {
-							x = d3.scale.log().domain([calculateMinX(), calculateMaxX()]).range([0, w]).nice();	
+							x = d3.scale.log().domain([calculateMinX(), calculateMaxX()]).range([0, w]);//.nice();	
 						} else if(xScale == SCALE_LINEAR) {
 							x = d3.scale.linear().domain([calculateMinX(), calculateMaxX()]).range([0, w]).nice();
 							numAxisLabels = data.numAxisLabelsLinearScale;
@@ -693,7 +699,10 @@ MOD_chart.directive('chart', function () {
 						
 								
 						// add line label to line group
-						linesGroupText = linesGroup.append("svg:text");
+						linesGroupText = linesGroup.filter(function(d, i) {
+								return data.showLegend[i];
+							})
+							.append("svg:text");
 						linesGroupText.attr("class", function(d, i) {
 								// debug("Appending line [" + containerId + "]: " + i)
 								return "line_label series_" + i;
@@ -759,6 +768,9 @@ MOD_chart.directive('chart', function () {
 							.selectAll("g")
 								.data(data.displayNames)
 							.enter().append("g")
+							.filter(function(d, i) {
+								return data.showLegend[i];
+							})
 								.attr("class", "legend-labels");
 								
 						legendLabelGroup.append("svg:text")

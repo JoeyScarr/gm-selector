@@ -73,7 +73,7 @@ MOD_parsing.factory('inputReader', function() {
 				// If IMi is SA then get the vibration period
 				var period = -1;
 				if (name.substr(0,2) == 'SA') {
-					period = parseFloat(IMjName.substr(4));
+					period = parseFloat(name.substr(4));
 				}
 				// Now read the IMi and CDF values
 				var GCIMvalues = [];
@@ -102,18 +102,21 @@ MOD_parsing.factory('inputReader', function() {
 					GCIMoutput.IMi[j].realizations.push([parseFloat(data[2*j+1]),parseFloat(data[2*j+2])]);
 				}
 			}
-				
+			
 			// Precompute discrete CDFs for the realizations of each IMi.
 			for (var i = 0; i < numIMi; ++i) {
 				GCIMoutput.IMi[i].realizationCDF = [];
 				// First, sort in ascending order.
-				GCIMoutput.IMi[i].realizations.sort(function(a,b){return a[0]-b[0];});
+				var sortedRealizations = GCIMoutput.IMi[i].realizations.slice(0);
+				sortedRealizations.sort(function(a,b){return a[0]-b[0];});
 				// Then iterate over all realizations and count them.
 				var count = 0.0;
 				for (var j = 0; j < numIMiRealizations; ++j) {
 					count += 1.0;
-					GCIMoutput.IMi[i].realizationCDF.push([GCIMoutput.IMi[i].realizations[j][0],count/numIMiRealizations]);
+					GCIMoutput.IMi[i].realizationCDF.push([sortedRealizations[j][0],count/numIMiRealizations]);
 				}
+				// Store the sorted realizations for later
+				GCIMoutput.IMi[i].sortedRealizations = sortedRealizations;
 			}
 			
 			// Output the data structure.
