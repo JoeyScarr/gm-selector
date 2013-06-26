@@ -3,7 +3,8 @@
 // Create the main controller in the base app module.
 var app = angular.module('app');
 
-app.controller('MainCtrl', ['$scope', 'inputReader', function($scope, inputReader) {
+app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector',
+														function($scope, inputReader, util, gmSelector) {
 	$scope.inputJsonString = '';
 	
 	var xmin = Math.exp(-5.5);
@@ -12,8 +13,16 @@ app.controller('MainCtrl', ['$scope', 'inputReader', function($scope, inputReade
 		return 1.0 / Math.pow(x, 2);
 	};
 	
+	$scope.input = null;
 	$scope.chartData = [];
 	$scope.SAChartData = null;
+	$scope.selectionOutput = null;
+	$scope.selectionOutputString = null;
+	
+	$scope.selectGMs = function() {
+		$scope.selectionOutput = gmSelector.selectGroundMotions($scope.input);
+		$scope.selectionOutputString = JSON.stringify($scope.selectionOutput, null, 2);
+	};
 	
 	// Generates and returns charts for the parsed input data.
 	$scope.plot = function(data) {
@@ -44,15 +53,6 @@ app.controller('MainCtrl', ['$scope', 'inputReader', function($scope, inputReade
 		return charts;
 	};
 	
-	var median = function(sortedvalues) {
-		var half = Math.floor(sortedvalues.length/2);
-		if(sortedvalues.length % 2) {
-			return sortedvalues[half][0];
-		} else {
-			return (sortedvalues[half-1][0] + sortedvalues[half][0]) / 2.0;
-		}
-	};
-	
 	// Generates a plot of Spectral Acceleration against period, T (if SA data is present).
 	$scope.plotSA = function(data) {
 		var chart = null;
@@ -74,7 +74,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', function($scope, inputReade
 					realizationLines[j].push([period, IMi.realizations[j][0]]);
 				}
 				
-				medianLine.push([period, median(IMi.sortedRealizations)]);
+				medianLine.push([period, util.median(IMi.sortedRealizations)]);
 			}
 		}
 		

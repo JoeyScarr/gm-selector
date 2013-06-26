@@ -86,6 +86,7 @@ MOD_parsing.factory('inputReader', function() {
 				var IMi = {
 					name: name,
 					period: period,
+					weighting: 1,
 					GCIMvalues: GCIMvalues,
 					realizations: []
 				};

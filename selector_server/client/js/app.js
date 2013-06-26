@@ -1,4 +1,4 @@
 
 // Declare the app module.
-var app = angular.module('app', ['parsing', 'chart']);
+var app = angular.module('app', ['chart', 'parsing', 'selection', 'util']);
 

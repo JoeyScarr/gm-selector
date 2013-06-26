@@ -15,6 +15,14 @@
 			<p>Description goes here.</p>
 			<hr />
       <input type="file" id="inputFileSelect" />
+			<div ng-show="!!input">
+				Weights:
+				<div ng-repeat="IMi in input.IMi">
+					{{ IMi.name }}: <input type="number" min="0" step="any" ng-model="IMi.weighting" />
+				</div>
+				<input type="button" ng-click="selectGMs()" value="Select Ground Motions" />
+				<pre ng-show="!!selectionOutputString">{{ selectionOutputString }}</pre>
+			</div>
 			<hr />
 			<h2 ng-show="chartData.length > 0">GCIM Charts</h2>
 			<div ng-show="!!SAChartData">
@@ -35,5 +43,7 @@
     <script src="js/chart.js"></script>
     <script src="js/controller.js"></script>
     <script src="js/parsing.js"></script>
+    <script src="js/selection.js"></script>
+    <script src="js/util.js"></script>
   </body>
 </html>
