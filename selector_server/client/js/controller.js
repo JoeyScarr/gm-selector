@@ -3,8 +3,8 @@
 // Create the main controller in the base app module.
 var app = angular.module('app');
 
-app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector',
-														function($scope, inputReader, util, gmSelector) {
+app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'database',
+														function($scope, inputReader, util, gmSelector, database) {
 	$scope.inputJsonString = '';
 	
 	var xmin = Math.exp(-5.5);
@@ -13,11 +13,38 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector',
 		return 1.0 / Math.pow(x, 2);
 	};
 	
+	$scope.databases = [
+		{name:'NGAdatabase', label:'NGA Database'}
+	];
+	
 	$scope.input = null;
 	$scope.chartData = [];
 	$scope.SAChartData = null;
 	$scope.selectionOutput = null;
 	$scope.selectionOutputString = null;
+	
+	$scope.dbLoaded = false;
+	$scope.dbLoading = false;
+	$scope.databaseName = '';
+	$scope.databaseData = null;
+	
+	$scope.$watch('databaseName', function(newVal, oldVal) {
+		$scope.dbLoaded = false;
+		$scope.databaseData = null;
+		if (newVal) {
+			$scope.dbLoading = true;
+			database.loadDatabase(newVal, function(data) {
+				$scope.databaseData = data[0];
+				$scope.dbLoaded = true;
+				$scope.dbLoading = false;
+			}, function(status) {
+				$scope.databaseData = status;
+				$scope.dbLoading = false;
+			});
+		}
+	}, true);
+	
+	
 	
 	$scope.selectGMs = function() {
 		$scope.selectionOutput = gmSelector.selectGroundMotions($scope.input);

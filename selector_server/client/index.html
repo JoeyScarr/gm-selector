@@ -14,13 +14,25 @@
 			<h2>Ground Motion Selector</h2>
 			<p>Description goes here.</p>
 			<hr />
+			<select ng-model="databaseName" ng-options="db.name as db.label for db in databases">
+				<option value="">-- Choose database --</option>
+			</select>
+			<span ng-show="dbLoading">
+				<img alt="Loading database..." src="images/ajax-loader.gif" style="vertical-align: top" />
+			</span>
+			<span ng-show="dbLoaded">
+				<img alt="Database loaded." src="images/tick.png" style="vertical-align: top" />
+				<p>First line of database:</p>
+				<pre>{{ databaseData }}</pre>
+			</span>
+			<hr />
       <input type="file" id="inputFileSelect" />
 			<div ng-show="!!input">
 				Weights:
 				<div ng-repeat="IMi in input.IMi">
 					{{ IMi.name }}: <input type="number" min="0" step="any" ng-model="IMi.weighting" />
 				</div>
-				<input type="button" ng-click="selectGMs()" value="Select Ground Motions" />
+				<input class="btn btn-primary" type="button" ng-disabled="!dbLoaded" ng-click="selectGMs()" value="Select Ground Motions" />
 				<pre ng-show="!!selectionOutputString">{{ selectionOutputString }}</pre>
 			</div>
 			<hr />

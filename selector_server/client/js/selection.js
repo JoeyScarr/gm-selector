@@ -57,3 +57,20 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 		}
 	};
 }]);
+
+// Set up a database service, which deals with loading the database of ground motions.
+MOD_selection.factory('database', ['$http', function($http) {
+	return {
+		// Loads a database from the server.
+		// Calls callback with the data when it arrives, or error if something goes wrong.
+		loadDatabase: function(dbName, callback, errorCallback) {
+			$http.get('data/' + dbName + '.json')
+				.success(function(data, status, headers, config) {
+					// TODO: Convert data into some kind of structure here.
+					callback(data);
+				}).error(function(data, status, headers, config) {
+					errorCallback(status);
+				});
+		}
+	};
+}]);
