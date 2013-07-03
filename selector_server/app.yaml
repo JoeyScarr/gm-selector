@@ -5,6 +5,10 @@ api_version: 1
 threadsafe: yes
 
 handlers:
+- url: /data
+  static_dir: client/data
+  mime_type: application/json
+
 - url: /(.+)
   static_files: client/\1
   upload: client/(.+)
