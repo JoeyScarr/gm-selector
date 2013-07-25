@@ -69,6 +69,20 @@ MOD_util.factory('util', function() {
 		},
 		binary_search: binary_search,
 		interp_array: interp_array,
+		sample: function (size) {
+			var arr = new Array(size);
+			for (var j = 0; j < size; j++) {
+				arr[j] = j;
+			}
+			var shuffled = arr.slice(0), i = arr.length, min = i - size, temp, index;
+			while (i-- > min) {
+				index = Math.floor(i * Math.random());
+				temp = shuffled[index];
+				shuffled[index] = shuffled[i];
+				shuffled[i] = temp;
+			}
+			return shuffled.slice(min);
+		},
 		ks_critical_value: function(n, alpha) {
 			// Make sure n is at least 1
 			if (n < 1) {
