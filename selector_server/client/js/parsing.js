@@ -113,6 +113,7 @@ MOD_parsing.factory('inputReader', function() {
 				// Then iterate over all realizations and count them.
 				var count = 0.0;
 				for (var j = 0; j < numIMiRealizations; ++j) {
+					GCIMoutput.IMi[i].realizationCDF.push([sortedRealizations[j][0],count/numIMiRealizations]);
 					count += 1.0;
 					GCIMoutput.IMi[i].realizationCDF.push([sortedRealizations[j][0],count/numIMiRealizations]);
 				}

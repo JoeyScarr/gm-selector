@@ -69,7 +69,6 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 					{
 						'name': 'Realizations',
 						'isDiscrete': true,
-						'drawCircles': true,
 						'data': IMi.realizationCDF,
 						'color': 'blue'
 					}
