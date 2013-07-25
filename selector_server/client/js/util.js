@@ -70,6 +70,11 @@ MOD_util.factory('util', function() {
 		binary_search: binary_search,
 		interp_array: interp_array,
 		ks_critical_value: function(n, alpha) {
+			// Make sure n is at least 1
+			if (n < 1) {
+				error('n was less than 1');
+			}
+			
 			// We only want a two-sided test, so halve the significance level
 			var alpha1 = alpha / 2;
 			
@@ -116,6 +121,7 @@ MOD_util.factory('util', function() {
 					return Math.min(criticalValue , 1 - alpha1);
 				}
 			} else {
+				error('alpha ' + alpha1 + ' was outside the required bounds [0.005,0.10]');
 				return NaN;
 			}
 		}
