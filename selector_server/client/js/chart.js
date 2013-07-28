@@ -17,19 +17,20 @@ MOD_chart.directive('chart', function () {
 		replace: true,
 		scope: {
 			data: '=',
-			id: '='
+			id: '=',
+			scale: '='
 		},
 		compile: function compile(element, attrs) {
 			
 			var width = attrs.width || '100%';
 			var height = attrs.height || '620px';
-			var scale = attrs.scale || SCALE_LOG;
 			var htmlText = '<div style="position:relative;display:inline-block;width:' + width + ';height:' + height + '"></div>'
 			element.replaceWith(htmlText);
 			
 			return function link(scope, element, attrs) {
 				element[0].id = scope.id;
 				var id = scope.id;
+				var scale = scope.scale || SCALE_LOG;
 				scope.$watch('data', function (newVal, oldVal) {
 					$('#' + id).empty();
 					

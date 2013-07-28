@@ -3,6 +3,30 @@
 // Create the main controller in the base app module.
 var app = angular.module('app');
 
+app.filter('odd', function() {
+	return function(items) {
+		var filtered = [];
+		angular.forEach(items, function(item, index) {
+			if (index % 2 == 1) {
+				filtered.push(item);
+			}
+		});
+		return filtered;
+	}
+});
+
+app.filter('even', function() {
+	return function(items) {
+		var filtered = [];
+		angular.forEach(items, function(item, index) {
+			if (index % 2 == 0) {
+				filtered.push(item);
+			}
+		});
+		return filtered;
+	}
+});
+
 app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'database',
 														function($scope, inputReader, util, gmSelector, database) {
 	$scope.inputJsonString = '';
@@ -19,7 +43,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 	
 	$scope.input = null;
 	$scope.chartData = [];
-	$scope.SAChartData = null;
+	$scope.visibleChart = 'SA';
 	$scope.selectionOutput = null;
 	$scope.selectionOutputString = null;
 	
@@ -57,6 +81,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 		for (var i = 0; i < data.numIMi; ++i) {
 			var IMi = data.IMi[i];
 			var chart = {
+				name: IMi.name,
 				xAxisLabel: IMi.name,
 				yAxisLabel: 'Cumulative Probability, CDF',
 				lines: [
@@ -107,6 +132,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 		// If there were SAs in the data, build the chart.
 		if (realizationLines.length > 0) {
 			chart = {
+				name: 'SA',
 				xAxisLabel: 'Period, T (s)',
 				yAxisLabel: 'Spectral acceleration, SA (g)',
 				lines: []
@@ -144,7 +170,10 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 						try {
 							$scope.input = inputReader.parse(e.target.result);
 							$scope.chartData = $scope.plot($scope.input);
-							$scope.SAChartData = $scope.plotSA($scope.input);
+							var SAChartData = $scope.plotSA($scope.input);
+							if (SAChartData) {
+								$scope.chartData.splice(0,0,SAChartData);
+							}
 							
 							$scope.inputJsonString = JSON.stringify($scope.input, null, 2);
 						} catch (err) {

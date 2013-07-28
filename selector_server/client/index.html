@@ -5,58 +5,106 @@
 		<link rel="stylesheet" type="text/css" href="css/lib/bootstrap.min.css">
 		<link rel="stylesheet" type="text/css" href="css/chart.css">
 		<link rel="stylesheet" type="text/css" href="css/main.css">
-		<!-- Load Angular now -->
+		<!-- Third-party libraries -->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
-		<title>Ground Motion Selector</title>
-  </head>
-  <body ng-controller="MainCtrl">
-    <div class="mainbody">
-			<h2>Ground Motion Selector</h2>
-			<p>Description goes here.</p>
-			<hr />
-			<select ng-model="databaseName" ng-options="db.name as db.label for db in databases">
-				<option value="">-- Choose database --</option>
-			</select>
-			<span ng-show="dbLoading">
-				<img alt="Loading database..." src="images/ajax-loader.gif" style="vertical-align: top" />
-			</span>
-			<span ng-show="dbLoaded">
-				<img alt="Database loaded." src="images/tick.png" style="vertical-align: top" />
-				<p>First line of database:</p>
-				<pre>{{ databaseData }}</pre>
-			</span>
-			<hr />
-      <input type="file" id="inputFileSelect" />
-			<div ng-show="!!input">
-				Weights:
-				<div ng-repeat="IMi in input.IMi">
-					{{ IMi.name }}: <input type="number" min="0" step="any" ng-model="IMi.weighting" />
-				</div>
-				<input class="btn btn-primary" type="button" ng-disabled="!dbLoaded" ng-click="selectGMs()" value="Select Ground Motions" />
-				<pre ng-show="!!selectionOutputString">{{ selectionOutputString }}</pre>
-			</div>
-			<hr />
-			<h2 ng-show="chartData.length > 0">GCIM Charts</h2>
-			<div ng-show="!!SAChartData">
-				<chart id="'SAchart'" data="SAChartData" scale="log" width="700px" height="400px"></chart>
-			</div>
-			<div ng-repeat="chart in chartData" style="display:inline-block">
-				<chart id="'chart' + $index" data="chart" scale="linear" width="700px" height="400px"></chart>
-				<hr />
-			</div>
-      <!-- <pre>{{ inputJsonString }}</pre> -->
-    </div>
-		
-		
-		<!-- Load scripts other than Angular at the end -->
 		<script src="js/lib/seedrandom-min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.0.8/d3.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+		<!-- My JS files -->
     <script src="js/app.js"></script>
     <script src="js/chart.js"></script>
     <script src="js/controller.js"></script>
     <script src="js/parsing.js"></script>
     <script src="js/selection.js"></script>
     <script src="js/util.js"></script>
+		<title>Ground Motion Selector</title>
+  </head>
+  <body ng-controller="MainCtrl">
+    <div class="mainbody">
+			<h2>Ground Motion Selector</h2>
+			<p>This is a tool for selecting ground motions for use in seismic response analysis.</p>
+			<div class="input panel">
+				<p>
+					<b>Select random realizations file (OpenSHA format): <input type="file" id="inputFileSelect" /></b>
+				</p>
+				<p ng-show="chartData.length > 0">
+					Show chart for:
+					<select ng-model="visibleChart"
+									ng-options="chart.name as chart.name for chart in chartData">
+					</select>
+				</p>
+				<div ng-repeat="chart in chartData" ng-show="chart.name == visibleChart">
+					<chart id="'chart' + $index" data="chart" scale="chart.name == 'SA' && 'log' || 'linear'" width="660px" height="400px"></chart>
+				</div>
+			</div>
+			<div class="output panel">
+				<p>
+					<b>Choose database of actual ground motions:</b>
+					<select ng-model="databaseName" ng-options="db.name as db.label for db in databases">
+						<option value="">-- Choose database --</option>
+					</select>
+					<span ng-show="dbLoading">
+						<img alt="Loading database..." src="images/ajax-loader.gif" style="vertical-align: top" />
+					</span>
+					<span ng-show="dbLoaded">
+						<img alt="Database loaded." src="images/tick.png" style="vertical-align: top" />
+					</span>
+				</p>
+				
+				<div ng-show="!!input">
+					<b>Choose weightings:</b>
+					<a href="#weightings" role="button" class="btn" data-toggle="modal">Weightings</a>
+					
+					<!-- Modal -->
+					<div id="weightings" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+							<h3 id="modalLabel">Select IM weightings</h3>
+						</div>
+						<div class="modal-body">
+							<div class="leftcol">
+								<table>
+									<tr ng-repeat="IMi in input.IMi | even">
+										<td class="weightlabel">
+											{{ IMi.name }}:
+										</td>
+										<td class="weightinput">
+											<input class="weight rightcol" type="number" min="0" step="any" ng-model="IMi.weighting" />
+										</td>
+									</tr>
+								</table>
+							</div>
+							<div class="rightcol">
+								<table>
+									<tr ng-repeat="IMi in input.IMi | odd">
+										<td class="weightlabel">
+											{{ IMi.name }}:
+										</td>
+										<td class="weightinput">
+											<input class="weight rightcol" type="number" min="0" step="any" ng-model="IMi.weighting" />
+										</td>
+									</tr>
+								</table>
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+						</div>
+					</div>
+					<div style="margin-top:20px">
+						<input class="btn btn-primary" type="button" ng-disabled="!dbLoaded" ng-click="selectGMs()" value="Select Ground Motions" />
+					</div>
+				</div>
+			</div>
+			
+			<!-- Debug stuff goes down here -->
+			<h3>Debug output</h3>
+			<span ng-show="dbLoaded">
+				<p>First line of database:</p>
+				<pre>{{ databaseData }}</pre>
+			</span>
+      <!-- <pre>{{ inputJsonString }}</pre> -->
+    </div>
   </body>
 </html>

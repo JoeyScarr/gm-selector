@@ -2,3 +2,49 @@
 	width: 1400px;
 	margin: auto;
 }
+
+div.panel {
+	width:670px;
+	height: 700px;
+	border: 1px solid gray;
+	border-radius: 5px;
+	padding: 10px;
+	margin-bottom: 100px;
+}
+
+/* Left panel */
+div.input {
+	float:left;
+}
+
+/* Right panel */
+div.output {
+	float:right;
+}
+
+select {
+	margin-bottom:0;
+}
+
+input.weight {
+	width: 50px;
+	margin-bottom:0;
+}
+
+.leftcol {
+	float:left;
+}
+
+.rightcol {
+	float:right;
+}
+
+.weightlabel {
+	padding-left: 50px;
+	padding-right: 10px;
+}
+
+.weightinput {
+	padding-left: 10px;
+	padding-right: 50px;
+}
