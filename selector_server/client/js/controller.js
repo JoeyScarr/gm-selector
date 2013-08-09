@@ -46,6 +46,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 	$scope.visibleChart = 'SA';
 	$scope.selectionOutput = null;
 	$scope.selectionOutputString = null;
+	$scope.debugOutput = null;
 	
 	$scope.dbLoaded = false;
 	$scope.dbLoading = false;
@@ -71,7 +72,11 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 	
 	
 	$scope.selectGMs = function() {
-		$scope.selectionOutput = gmSelector.selectGroundMotions($scope.input);
+		$scope.debugOutput = '';
+		$scope.selectionOutput = gmSelector.selectGroundMotions($scope.input, $scope.databaseData,
+			function(output) {
+				$scope.debugOutput += output + '\n';
+			});
 		$scope.selectionOutputString = JSON.stringify($scope.selectionOutput, null, 2);
 	};
 	

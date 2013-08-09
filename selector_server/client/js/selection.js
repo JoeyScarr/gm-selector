@@ -31,7 +31,7 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 	};
 	
 	return {
-		selectGroundMotions: function(GCIMdata, database, weights) {
+		selectGroundMotions: function(GCIMdata, database, debugOutputFunc) {
 			// TODO: Make these parameters instead
 			var Ngms = 20;
 			var Nreplicates = 5;
@@ -100,9 +100,12 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 			}
 			var replicateIndex = [];
 			var selectedGroundMotionReplicateIndex = [];
+			var R = []; // The global residual for each replicate
+			var minR = Number.MAX_VALUE;
+			var minRIndex = -1;
 			for (var k = 0; k < Nreplicates; ++k) {
 				// Get a random sample of simulated ground motions (a "replicate")
-				replicateIndex.push(util.sample(GCIMdata.numIMiRealizations));
+				replicateIndex.push(util.sample(Ngms));
 				var selectedGroundMotions = [];
 				for (var i = 0; i < replicateIndex[k]; ++i) {
 					var realizationIndex = replicateIndex[k][i];
@@ -114,11 +117,12 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 						var groundMotion = database[j];
 						var residuals = [];
 						var residualSum = 0;
-						for (var ii = 0; ii < GCIMoutput.numIMi; ++ii) {
-							var scaledProspectiveValue = groundMotion.IM[GCIMoutput.IMi[ii].name];
-							var simulatedValue = GCIMdata.IMi[ii].realizations[realizationIndex][0];
-							var simulatedSigma = GCIMdata.IMi[ii].realizations[realizationIndex][1];
-							var residual = weights[ii] * Math.pow(Math.log(scaledProspectiveValue / simulatedValue) / simulatedSigma, 2);
+						for (var ii = 0; ii < GCIMdata.numIMi; ++ii) {
+							var im = GCIMdata.IMi[ii];
+							var scaledProspectiveValue = groundMotion.IM[im.name];
+							var simulatedValue = im.realizations[realizationIndex][0];
+							var simulatedSigma = im.realizations[realizationIndex][1];
+							var residual = im.weighting * Math.pow(Math.log(scaledProspectiveValue / simulatedValue) / simulatedSigma, 2);
 							residuals.push(residual);
 							residualSum += residual;
 						}
@@ -134,9 +138,29 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 				}
 				selectedGroundMotionReplicateIndex.push(selectedGroundMotions);
 				
-				// TODO: Compute the KS values for each IMi and hence the value of the
-				// 'global' residual, R (see Eqn 11)
+				// Compute the KS values for each IMi and hence the value of the
+				// 'global' residual for this replicate, R (see Eqn 11)
+				var rSum = 0;
+				for (var i = 0; i < GCIMdata.numIMi; ++i) {
+					var weight = GCIMdata.IMi[i].weighting;
+					// TODO: Go over this with Brendon
+					var targetCDF = [];
+					var ks = util.ks_critical_value(Ngms, 0.05);
+					rSum += weight * ks * ks;
+				}
+				R.push(rSum);
+				if (rSum < minR) {
+					minR = rSum;
+					minRIndex = k;
+				}
 			}
+			
+			// The replicate with minimum R is at index minRIndex
+			debugOutputFunc('\n\nBest-fitting replicate: index ' + minRIndex);
+			debugOutputFunc('R: ' + minR);
+			debugOutputFunc('Simulated realizations used: ' + JSON.stringify(replicateIndex[minRIndex]));
+			debugOutputFunc('Ground motions selected:');
+			debugOutputFunc(JSON.stringify(selectedGroundMotionReplicateIndex[minRIndex]),null,2);
 		}
 	};
 }]);
