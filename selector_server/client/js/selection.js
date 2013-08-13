@@ -9,6 +9,9 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 	// Helper functions
 	var error = util.error;
 	var warning = util.warning;
+	var defaultFor = function(arg, val) {
+		return typeof arg !== 'undefined' ? arg : val;
+	};
 	
 	var getScaleFactorIndex = function(IMName) {
 		// Based on the name of the IM, returns an index of 0, 1, or 2.
@@ -31,12 +34,13 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 	};
 	
 	return {
-		selectGroundMotions: function(GCIMdata, database, debugOutputFunc) {
-			// TODO: Make these parameters instead
-			var Ngms = 20;
-			var Nreplicates = 5;
-			var repeatability = true;
-			var allowAsRecordedMotions = true;
+		selectGroundMotions: function(GCIMdata, database, debugOutputFunc,
+																	Ngms, Nreplicates, repeatability, allowAsRecordedMotions) {
+			// Parameter default values
+			Ngms = defaultFor(Ngms, 30);
+			Nreplicates = defaultFor(Nreplicates, 1);
+			repeatability = defaultFor(repeatability, true);
+			allowAsRecordedMotions = defaultFor(allowAsRecordedMotions, true);
 			
 			// Step 1: Get the GCIMrealization data
 			// if the number of GCIM realizations is less than Ngms then set Ngms = numIMiRealizations
