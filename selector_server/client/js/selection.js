@@ -179,7 +179,8 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 			var minRIndex = -1;
 			for (var k = 0; k < Nreplicates; ++k) {
 				// Get a random sample of simulated ground motions (a "replicate")
-				replicateIndex.push(util.sample(Ngms));
+				//replicateIndex.push(util.sample(Ngms));
+				replicateIndex.push([23,91,30,7,41,20,98,90,24,54,84,14,49,50,26,29,93,38,25,1,87,86,28,96,67,94,52,48,71,68]);
 				var selectedGroundMotions = selectBestFittingGroundMotions(database, GCIMdata, replicateIndex[k]);
 				selectedGroundMotionReplicateIndex.push(selectedGroundMotions);
 				
