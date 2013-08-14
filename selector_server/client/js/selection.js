@@ -31,9 +31,29 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 		}
 	};
 	
+	var computeMediansAndSigmas = function(GCIMdata) {
+		for (var i = 0; i < GCIMdata.numIMi; ++i) {
+			var IMi = GCIMdata.IMi[i];
+			// Swap the x and y of the CDF for interpolation
+			var values = $.map(IMi.GCIMvalues, function(val, i) {
+				return [[val[1], val[0]]];
+			});
+			var median = util.interp_array(values, 0.5);
+			var x84 = util.interp_array(values, 0.84);
+			var x16 = util.interp_array(values, 0.16);
+			var sigma = 0.5 * Math.log(x84 / x16);
+			
+			IMi.median = median;
+			IMi.sigma = sigma;
+		}
+	};
+	
 	return {
-		// The below functions are only exposed for the purposes of unit testing.
+		// "Private" functions that are only exposed for unit testing.
 		getScaleFactorIndex: getScaleFactorIndex,
+		computeMediansAndSigmas: computeMediansAndSigmas,
+		
+		// The main algorithm itself.
 		selectGroundMotions: function(GCIMdata, database, debugOutputFunc,
 																	Ngms, Nreplicates, repeatability, allowAsRecordedMotions) {
 			// Parameter default values
@@ -42,8 +62,8 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 			repeatability = util.defaultFor(repeatability, true);
 			allowAsRecordedMotions = util.defaultFor(allowAsRecordedMotions, true);
 			
-			// Step 1: Get the GCIMrealization data
-			// if the number of GCIM realizations is less than Ngms then set Ngms = numIMiRealizations
+			// Do some bounds checking.
+			// If the number of GCIM realizations is less than Ngms then set Ngms = numIMiRealizations
 			if (GCIMdata.numIMiRealizations == 0) {
 				error('0 GCIM realizations present.');
 				return null;
@@ -61,22 +81,10 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 							'The number of realizations (numIMiRealizations) should be increased.');
 				Nreplicates = Ncomb;
 			}
+			
 			// Get the approximate median and lognormal sigma for each GCIM distribution
 			// (for use in approximate bias assessment)
-			for (var i = 0; i < GCIMdata.numIMi; ++i) {
-				var IMi = GCIMdata.IMi[i];
-				// Swap the x and y of the CDF for interpolation
-				var values = $.map(IMi.GCIMvalues, function(val, i) {
-					return [[val[1], val[0]]];
-				});
-				var median = util.interp_array(values, 0.5);
-				var x84 = util.interp_array(values, 0.84);
-				var x16 = util.interp_array(values, 0.16);
-				var sigma = 0.5 * Math.log(x84 / x16);
-				
-				IMi.median = median;
-				IMi.sigma = sigma;
-			}
+			computeMediansAndSigmas(GCIMdata);
 			
 			if (allowAsRecordedMotions) {
 				// Step 3a: Get the prospective ground motions from the desired database(s)
