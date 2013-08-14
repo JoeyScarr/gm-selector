@@ -63,6 +63,22 @@ describe('Util module', function(){
 		}));
 	});
 	
+	describe('defaultFor', function() {
+		it('should return given values when appropriate', inject(function(util) {
+			expect(util.defaultFor(0, 1)).toEqual(0);
+			expect(util.defaultFor(10, 1)).toEqual(10);
+			expect(util.defaultFor('test', 1)).toEqual('test');
+			expect(util.defaultFor(null, 1)).toEqual(null);
+			expect(util.defaultFor(false, 1)).toEqual(false);
+		}));
+		it('should return default values when appropriate', inject(function(util) {
+			expect(util.defaultFor(undefined, 1)).toEqual(1);
+			expect(util.defaultFor(undefined, 'test')).toEqual('test');
+			expect(util.defaultFor(undefined, undefined)).toBeUndefined();
+			expect(util.defaultFor(undefined, true)).toEqual(true);
+		}));
+	});
+	
 	describe('binomial', function() {
 		it('should correctly calculate binomials', inject(function(util) {
 			expect(util.binomial(0, 0)).toEqual(1);

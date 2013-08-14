@@ -67,6 +67,9 @@ MOD_util.factory('util', function() {
 	return {
 		error: error,
 		warning: warning,
+		defaultFor: function(arg, val) {
+			return typeof arg !== 'undefined' ? arg : val;
+		},
 		binomial: function(N, K) {
 			var res = 1;
 			for (var k = 0; k < K; ++k) {
