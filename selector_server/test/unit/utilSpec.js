@@ -40,9 +40,26 @@ describe('Util module', function(){
 			expect(util.binary_search(list, 3)).toEqual(3);
 			expect(util.binary_search(list, 4)).toEqual(-1);
 		}));
-	})
+	});
 
-	it('should ....', inject(function() {
-		//spec body
-	}));
+	describe('interp_array', function() {
+		it('should correctly interpolate between two values', inject(function(util) {
+			var list = [[0,0], [1,10]];
+			expect(util.interp_array(list, -0.1)).toEqual(null);
+			expect(util.interp_array(list, 0)).toEqual(0);
+			expect(util.interp_array(list, 0.5)).toEqual(5);
+			expect(util.interp_array(list, 1)).toEqual(10);
+			expect(util.interp_array(list, 1.1)).toEqual(null);
+		}));
+		it('should correctly interpolate in a list with duplicates', inject(function(util) {
+			var list = [[0,0], [1,10], [1,10], [1,10], [2,11]];
+			expect(util.interp_array(list, -0.1)).toEqual(null);
+			expect(util.interp_array(list, 0)).toEqual(0);
+			expect(util.interp_array(list, 0.5)).toEqual(5);
+			expect(util.interp_array(list, 1)).toEqual(10);
+			expect(util.interp_array(list, 1.1)).toEqual(10.1);
+			expect(util.interp_array(list, 2)).toEqual(11);
+			expect(util.interp_array(list, 2.1)).toEqual(null);
+		}));
+	});
 });

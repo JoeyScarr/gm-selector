@@ -47,17 +47,17 @@ MOD_util.factory('util', function() {
 	};
 	
 	var interp_array = function(data, x) {
-		if (x < data[0][0] || x > data[data.length-1][0]) {
+		if (data.length < 1 || x < data[0][0] || x > data[data.length-1][0]) {
 			error('interp_array() failed! Value ' + x + ' was outside the data bounds.')
-			return -1;
+			return null;
 		}
 		// First, binary search for x.
 		var i = binary_search(data, x);
 		// Check to see if interpolation is actually required.
-		if (data[i][0] == data[i+1][0]) {
+		if (i == 0 || data[i][0] == data[i-1][0]) {
 			return data[i][1];
 		}
-		return data[i][1] + ((x - data[i][0])/(data[i+1][0]-data[i][0]))*(data[i+1][1]-data[i][1]);
+		return data[i-1][1] + ((x - data[i-1][0])/(data[i][0]-data[i-1][0]))*(data[i][1]-data[i-1][1]);
 	};
 	
 	var log10 = function(val) {
