@@ -15,16 +15,31 @@ MOD_util.factory('util', function() {
 		console.log('WARNING: ' + error);
 	};
 	
-	// This binary search finds the index of the highest number <= x.
+	// This binary search finds the index of the first element >= x.
+	// NOTE: Requires a list of [a,b] pairs and treats a as the key.
+	// Returns -1 if the value is outside the list.
 	var binary_search = function(data, x) {
-		var low = 0, high = data.length - 1, i, comparison;
-		while (low <= high) {
-			i = Math.floor((low + high) / 2);
-			if (data[i][0] < find) { low = i + 1; continue; };
-			if (data[i][0] > find) { high = i - 1; continue; };
-			return i;
+		if (data.length < 1 || x < data[0][0] || x > data[data.length-1][0]) {
+			return -1;
 		}
-		return null;
+		
+		// Adapted from http://www.cplusplus.com/reference/algorithm/lower_bound/
+		var count = data.length;
+		var step;
+		var idx = 0;
+		var first = 0;
+		while (count > 0) {
+			idx = first;
+			step = Math.floor(count / 2);
+			idx += step;
+			if (data[idx][0] < x) {
+				first = idx+1;
+				count -= step + 1;
+			} else {
+				count = step;
+			}
+		}
+		return first;
 	};
 	
 	var interp = function(a, b, f) {
