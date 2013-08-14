@@ -59,11 +59,12 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 		if (newVal) {
 			$scope.dbLoading = true;
 			database.loadDatabase(newVal, function(data) {
-				$scope.databaseData = data[0];
+				$scope.databaseData = data;
+				$scope.databaseFirstLine = data[0];
 				$scope.dbLoaded = true;
 				$scope.dbLoading = false;
 			}, function(status) {
-				$scope.databaseData = status;
+				$scope.databaseFirstLine = status;
 				$scope.dbLoading = false;
 			});
 		}
