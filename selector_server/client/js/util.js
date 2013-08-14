@@ -107,6 +107,7 @@ MOD_util.factory('util', function() {
 			// Make sure n is at least 1
 			if (n < 1) {
 				error('n was less than 1');
+				return null;
 			}
 			
 			// We only want a two-sided test, so halve the significance level
@@ -150,13 +151,13 @@ MOD_util.factory('util', function() {
 					return interp_array(data, alpha1);
 				} else {
 					var A = 0.09037 * Math.pow(-log10(alpha1), 1.5) + 0.01515 * Math.pow(log10(alpha1), 2) - 0.08467 * alpha1 - 0.11143;
-					var asymptoticStat = Math.sqrt(-0.5 * Math.pow(log(alpha1), n));
+					var asymptoticStat = Math.sqrt(-0.5 * Math.log(alpha1) / n);
 					var criticalValue = asymptoticStat - 0.16693 / n - A / Math.pow(n, 1.5);
 					return Math.min(criticalValue , 1 - alpha1);
 				}
 			} else {
 				error('alpha ' + alpha1 + ' was outside the required bounds [0.005,0.10]');
-				return NaN;
+				return null;
 			}
 		}
 	};
