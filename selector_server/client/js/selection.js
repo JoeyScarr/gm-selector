@@ -113,12 +113,14 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 		
 		// The main algorithm itself.
 		selectGroundMotions: function(GCIMdata, database, debugOutputFunc,
-																	Ngms, Nreplicates, repeatability, allowAsRecordedMotions) {
+																	Ngms, Nreplicates, repeatability, allowAsRecordedMotions,
+																	alpha) {
 			// Parameter default values
 			Ngms = util.defaultFor(Ngms, 30);
 			Nreplicates = util.defaultFor(Nreplicates, 1);
 			repeatability = util.defaultFor(repeatability, true);
 			allowAsRecordedMotions = util.defaultFor(allowAsRecordedMotions, true);
+			alpha = util.defaultFor(alpha, 0.1);
 			
 			// Do some bounds checking.
 			// If the number of GCIM realizations is less than Ngms then set Ngms = numIMiRealizations
@@ -139,6 +141,7 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 							'The number of realizations (numIMiRealizations) should be increased.');
 				Nreplicates = Ncomb;
 			}
+			
 			
 			// Get the approximate median and lognormal sigma for each GCIM distribution
 			// (for use in approximate bias assessment)
@@ -172,7 +175,7 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 					var weight = GCIMdata.IMi[i].weighting;
 					// TODO: Go over this with Brendon
 					var targetCDF = [];
-					var ks = util.ks_critical_value(Ngms, 0.05);
+					var ks = util.ks_critical_value(Ngms, alpha);
 					rSum += weight * ks * ks;
 				}
 				R.push(rSum);
