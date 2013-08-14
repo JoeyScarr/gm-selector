@@ -98,6 +98,9 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 				}
 			}
 			
+			// Add metadata about the selection process for debugging.
+			database[minResidualIndex].residual = minResidual;
+			database[minResidualIndex].index = minResidualIndex;
 			// Store the best-fitting ground motion.
 			selectedGroundMotions.push(database[minResidualIndex]);
 		}
@@ -179,6 +182,14 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 				replicateIndex.push(util.sample(Ngms));
 				var selectedGroundMotions = selectBestFittingGroundMotions(database, GCIMdata, replicateIndex[k]);
 				selectedGroundMotionReplicateIndex.push(selectedGroundMotions);
+				
+				// Print debug output for the selected ground motions
+				for (var i = 0; i < selectedGroundMotions.length; i++) {
+					var gm = selectedGroundMotions[i];
+					debugOutputFunc('Selected record for realization ' + i +
+													' is the ground motion with index ' + gm.index +
+													' and residual ' + gm.residual);
+				}
 				
 				// Compute the KS values for each IMi and hence the value of the
 				// 'global' residual for this replicate, R (see Eqn 11)
