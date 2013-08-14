@@ -62,4 +62,37 @@ describe('Util module', function(){
 			expect(util.interp_array(list, 2.1)).toEqual(null);
 		}));
 	});
+	
+	describe('binomial', function() {
+		it('should correctly calculate binomials', inject(function(util) {
+			expect(util.binomial(0, 0)).toEqual(1);
+			expect(util.binomial(1, 0)).toEqual(1);
+			expect(util.binomial(1, 1)).toEqual(1);
+			expect(util.binomial(2, 1)).toEqual(2);
+			expect(util.binomial(7, 2)).toEqual(21);
+			expect(util.binomial(8, 3)).toEqual(56);
+			expect(util.binomial(8, 4)).toEqual(70);
+		}));
+	});
+	
+	describe('median', function() {
+		it('should return null for an empty list', inject(function(util) {
+			expect(util.median([])).toEqual(null);
+		}));
+		it('should be able to handle a list with a single item', inject(function(util) {
+			expect(util.median([[0,1]])).toEqual(0);
+		}));
+		it('should be able to find medians correctly', inject(function(util) {
+			expect(util.median([[0,1],[1,2]])).toEqual(0.5);
+			expect(util.median([[0,1],[1,1],[2,1]])).toEqual(1);
+		}));
+	});
+	
+	describe('sample', function() {
+		it('should return a list of the given size', inject(function(util) {
+			expect(util.sample(0).length).toEqual(0);
+			expect(util.sample(1).length).toEqual(1);
+			expect(util.sample(53).length).toEqual(53);
+		}));
+	});
 });
