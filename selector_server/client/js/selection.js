@@ -117,7 +117,7 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 																	alpha) {
 			// Parameter default values
 			Ngms = util.defaultFor(Ngms, 30);
-			Nreplicates = util.defaultFor(Nreplicates, 1);
+			Nreplicates = Math.max(1, util.defaultFor(Nreplicates, 1));
 			repeatability = util.defaultFor(repeatability, true);
 			allowAsRecordedMotions = util.defaultFor(allowAsRecordedMotions, true);
 			alpha = util.defaultFor(alpha, 0.1);
@@ -142,6 +142,18 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 				Nreplicates = Ncomb;
 			}
 			
+			// Normalize IM weightings.
+			var sumWeights = 0;
+			for (var i = 0; i < GCIMdata.numIMi; ++i) {
+				sumWeights += GCIMdata.IMi[i].weighting;
+			}
+			if (sumWeights != 1) {
+				warning('The sum of the IM weightings (' + sumWeights +
+								') was not 1.0 so it has been renormalized.')
+				for (var i = 0; i < GCIMdata.numIMi; ++i) {
+					GCIMdata.IMi[i].weighting /= sumWeights;
+				}
+			}
 			
 			// Get the approximate median and lognormal sigma for each GCIM distribution
 			// (for use in approximate bias assessment)
@@ -190,7 +202,9 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 			debugOutputFunc('R: ' + minR);
 			debugOutputFunc('Simulated realizations used: ' + JSON.stringify(replicateIndex[minRIndex]));
 			debugOutputFunc('Ground motions selected:');
-			debugOutputFunc(JSON.stringify(selectedGroundMotionReplicateIndex[minRIndex]),null,2);
+			debugOutputFunc(JSON.stringify(selectedGroundMotionReplicateIndex[minRIndex],null,2));
+			
+			return selectedGroundMotionReplicateIndex[minRIndex];
 		}
 	};
 }]);
