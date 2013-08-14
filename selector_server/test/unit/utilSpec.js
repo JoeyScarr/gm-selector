@@ -45,21 +45,21 @@ describe('Util module', function(){
 	describe('interp_array', function() {
 		it('should correctly interpolate between two values', inject(function(util) {
 			var list = [[0,0], [1,10]];
-			expect(util.interp_array(list, -0.1)).toEqual(null);
+			expect(util.interp_array(list, -0.1)).toBeNull();
 			expect(util.interp_array(list, 0)).toEqual(0);
 			expect(util.interp_array(list, 0.5)).toEqual(5);
 			expect(util.interp_array(list, 1)).toEqual(10);
-			expect(util.interp_array(list, 1.1)).toEqual(null);
+			expect(util.interp_array(list, 1.1)).toBeNull();
 		}));
 		it('should correctly interpolate in a list with duplicates', inject(function(util) {
 			var list = [[0,0], [1,10], [1,10], [1,10], [2,11]];
-			expect(util.interp_array(list, -0.1)).toEqual(null);
+			expect(util.interp_array(list, -0.1)).toBeNull();
 			expect(util.interp_array(list, 0)).toEqual(0);
 			expect(util.interp_array(list, 0.5)).toEqual(5);
 			expect(util.interp_array(list, 1)).toEqual(10);
 			expect(util.interp_array(list, 1.1)).toEqual(10.1);
 			expect(util.interp_array(list, 2)).toEqual(11);
-			expect(util.interp_array(list, 2.1)).toEqual(null);
+			expect(util.interp_array(list, 2.1)).toBeNull();
 		}));
 	});
 	
@@ -68,7 +68,7 @@ describe('Util module', function(){
 			expect(util.defaultFor(0, 1)).toEqual(0);
 			expect(util.defaultFor(10, 1)).toEqual(10);
 			expect(util.defaultFor('test', 1)).toEqual('test');
-			expect(util.defaultFor(null, 1)).toEqual(null);
+			expect(util.defaultFor(null, 1)).toBeNull();
 			expect(util.defaultFor(false, 1)).toEqual(false);
 		}));
 		it('should return default values when appropriate', inject(function(util) {
@@ -93,7 +93,7 @@ describe('Util module', function(){
 	
 	describe('median', function() {
 		it('should return null for an empty list', inject(function(util) {
-			expect(util.median([])).toEqual(null);
+			expect(util.median([])).toBeNull();
 		}));
 		it('should be able to handle a list with a single item', inject(function(util) {
 			expect(util.median([[0,1]])).toEqual(0);
@@ -124,8 +124,8 @@ describe('Util module', function(){
 			expect(util.ks_critical_value(20,0.15)).toEqual((0.26473+0.23156)/2);
 		}));
 		it('should return null with incorrect parameters', inject(function(util) {
-			expect(util.ks_critical_value(0,0.015)).toEqual(null);
-			expect(util.ks_critical_value(10,0.001)).toEqual(null);
+			expect(util.ks_critical_value(0,0.015)).toBeNull();
+			expect(util.ks_critical_value(10,0.001)).toBeNull();
 		}));
 		it('should use Miller approximation correctly', inject(function(util) {
 			var alpha = 0.05;
