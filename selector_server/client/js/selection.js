@@ -150,7 +150,7 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 			for (var i = 0; i < GCIMdata.numIMi; ++i) {
 				sumWeights += GCIMdata.IMi[i].weighting;
 			}
-			if (sumWeights != 1) {
+			if (Math.abs(1 - sumWeights) > 0.000000001) {
 				warning('The sum of the IM weightings (' + sumWeights +
 								') was not 1.0 so it has been renormalized.')
 				for (var i = 0; i < GCIMdata.numIMi; ++i) {
