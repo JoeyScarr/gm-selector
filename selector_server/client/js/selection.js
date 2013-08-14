@@ -31,6 +31,7 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 		}
 	};
 	
+	// Computes the median and log-normal sigma of the realizations for each IM.
 	var computeMediansAndSigmas = function(GCIMdata) {
 		for (var i = 0; i < GCIMdata.numIMi; ++i) {
 			var IMi = GCIMdata.IMi[i];
@@ -48,10 +49,30 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 		}
 	};
 	
+	// Scales a database of actual ground motions, given the IML and conditioning IM.
+	var scaleGroundMotions = function(database, IML, IMjName) {
+		// Determine the scale factor required for each ground motion and scale it
+		for (var i = 0; i < database.length; ++i) {
+			var groundMotion = database[i];
+			var IMjValue = groundMotion.IM[IMjName];
+			var index = getScaleFactorIndex(IMjName);
+			var scaleFactor = Math.pow(IML / IMjValue, 1.0 / index);
+			
+			// Scale each intensity measure of the ground motion
+			groundMotion.scaledIM = {};
+			for (var IMname in groundMotion.IM) {
+				var IMvalue = groundMotion.IM[IMname];
+				var index = getScaleFactorIndex(IMname);
+				groundMotion.scaledIM[IMname] = IMvalue * Math.pow(scaleFactor,index);
+			}
+		}
+	};
+	
 	return {
 		// "Private" functions that are only exposed for unit testing.
 		getScaleFactorIndex: getScaleFactorIndex,
 		computeMediansAndSigmas: computeMediansAndSigmas,
+		scaleGroundMotions: scaleGroundMotions,
 		
 		// The main algorithm itself.
 		selectGroundMotions: function(GCIMdata, database, debugOutputFunc,
@@ -86,24 +107,10 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 			// (for use in approximate bias assessment)
 			computeMediansAndSigmas(GCIMdata);
 			
+			// TODO: Ask Brendon what this check is for.
 			if (allowAsRecordedMotions) {
-				// Step 3a: Get the prospective ground motions from the desired database(s)
 				// TODO: Remove IMs that are not used in this analysis.
-				
-				// Determine the scale factor required for each ground motion and scale it
-				for (var i = 0; i < database.length; ++i) {
-					var groundMotion = database[i];
-					var IMjValue = groundMotion.IM[GCIMdata.IMjName];
-					var index = getScaleFactorIndex(GCIMdata.IMjName);
-					var scaleFactor = Math.pow(GCIMdata.IML / IMjValue, 1.0 / index);
-					
-					// Scale each intensity measure of the ground motion
-					for (var IMname in groundMotion.IM) {
-						var IMvalue = groundMotion.IM[IMname];
-						var index = getScaleFactorIndex(IMname);
-						groundMotion.IM[IMname] = IMvalue * Math.pow(scaleFactor,index);
-					}
-				}
+				scaleGroundMotions(database, GCIMdata.IML, GCIMdata.IMjName);
 			}
 			
 			// Step 5: loop over the number of replicates to consider
