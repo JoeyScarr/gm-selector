@@ -68,11 +68,48 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 		}
 	};
 	
+	// Select the actual ground motions that best fit a sample of simulated ones. 
+	var selectBestFittingGroundMotions = function(database, GCIMdata, sampleIndices) {
+		var selectedGroundMotions = [];
+		for (var i = 0; i < sampleIndices.length; ++i) {
+			var realizationIndex = sampleIndices[i];
+			
+			// Loop over all of the actual ground motions and select the best fitting one.
+			var minResidual = Number.MAX_VALUE;
+			var minResidualIndex = -1;
+			for (var j = 0; j < database.length; ++j) {
+				var groundMotion = database[j];
+				var residuals = [];
+				var residualSum = 0;
+				// Loop over the IMs and calculate the residual for each.
+				for (var k = 0; k < GCIMdata.numIMi; ++k) {
+					var im = GCIMdata.IMi[k];
+					var scaledActualValue = groundMotion.scaledIM[im.name];
+					var simulatedValue = im.realizations[realizationIndex][0];
+					var simulatedSigma = im.realizations[realizationIndex][1];
+					var residual = im.weighting * Math.pow(Math.log(scaledActualValue / simulatedValue) / simulatedSigma, 2);
+					residuals.push(residual);
+					residualSum += residual;
+				}
+				
+				if (residualSum < minResidual) {
+					minResidual = residualSum;
+					minResidualIndex = j;
+				}
+			}
+			
+			// Store the best-fitting ground motion.
+			selectedGroundMotions.push(database[minResidualIndex]);
+		}
+		return selectedGroundMotions;
+	};
+	
 	return {
 		// "Private" functions that are only exposed for unit testing.
 		getScaleFactorIndex: getScaleFactorIndex,
 		computeMediansAndSigmas: computeMediansAndSigmas,
 		scaleGroundMotions: scaleGroundMotions,
+		selectBestFittingGroundMotions: selectBestFittingGroundMotions,
 		
 		// The main algorithm itself.
 		selectGroundMotions: function(GCIMdata, database, debugOutputFunc,
@@ -125,36 +162,7 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 			for (var k = 0; k < Nreplicates; ++k) {
 				// Get a random sample of simulated ground motions (a "replicate")
 				replicateIndex.push(util.sample(Ngms));
-				var selectedGroundMotions = [];
-				for (var i = 0; i < replicateIndex[k]; ++i) {
-					var realizationIndex = replicateIndex[k][i];
-					
-					// Loop over all of the actual ground motions and select the best fitting one.
-					var minResidual = Number.MAX_VALUE;
-					var minResidualIndex = -1;
-					for (var j = 0; j < database.length; ++j) {
-						var groundMotion = database[j];
-						var residuals = [];
-						var residualSum = 0;
-						for (var ii = 0; ii < GCIMdata.numIMi; ++ii) {
-							var im = GCIMdata.IMi[ii];
-							var scaledProspectiveValue = groundMotion.IM[im.name];
-							var simulatedValue = im.realizations[realizationIndex][0];
-							var simulatedSigma = im.realizations[realizationIndex][1];
-							var residual = im.weighting * Math.pow(Math.log(scaledProspectiveValue / simulatedValue) / simulatedSigma, 2);
-							residuals.push(residual);
-							residualSum += residual;
-						}
-						
-						if (residualSum < minResidual) {
-							minResidual = residualSum;
-							minResidualIndex = j;
-						}
-					}
-					
-					// Store the best-fitting ground motion.
-					selectedGroundMotions.push(database[minResidualIndex]);
-				}
+				var selectedGroundMotions = selectBestFittingGroundMotions(database, GCIMdata, replicateIndex[k]);
 				selectedGroundMotionReplicateIndex.push(selectedGroundMotions);
 				
 				// Compute the KS values for each IMi and hence the value of the
