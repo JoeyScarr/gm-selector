@@ -11,109 +11,106 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 	var warning = util.warning;
 	var defaultFor = util.defaultFor;
 	
-	var getScaleFactorIndex = function(IMName) {
-		// Based on the name of the IM, returns an index of 0, 1, or 2.
-		// This index is used in the relation
-		//     ScaledIMiValues = UnscaledIMiValues*(Scalefactors^index);
-		// Ds575, Ds595 are constant with scale factor so index = 0
-		// PGA, PGV, SA etc are linear with scale factor so index = 1
-		// IA is quadratic with scale factor so index = 2
-		if (IMName == 'Ds595' || IMName == 'Ds575') {
-			return 0.0;
-		} else if (IMName == 'PGA' || IMName == 'PGV' || IMName.substr(0,2) == 'SA' ||
-							 IMName == 'CAV' || IMName == 'ASI' || IMName == 'SI' || IMName == 'DSI') {
-			return 1.0;
-		} else if (IMName == 'IA') {
-			return 2.0;
-		} else {
-			error('We don\'t know what scale factor index to use for ' + IMName);
-			return NaN;
-		}
-	};
-	
-	// Computes the median and log-normal sigma of the realizations for each IM.
-	var computeMediansAndSigmas = function(GCIMdata) {
-		for (var i = 0; i < GCIMdata.numIMi; ++i) {
-			var IMi = GCIMdata.IMi[i];
-			// Swap the x and y of the CDF for interpolation
-			var values = $.map(IMi.GCIMvalues, function(val, i) {
-				return [[val[1], val[0]]];
-			});
-			var median = util.interp_array(values, 0.5);
-			var x84 = util.interp_array(values, 0.84);
-			var x16 = util.interp_array(values, 0.16);
-			var sigma = 0.5 * Math.log(x84 / x16);
-			
-			IMi.median = median;
-			IMi.sigma = sigma;
-		}
-	};
-	
-	// Scales a database of actual ground motions, given the IML and conditioning IM.
-	var scaleGroundMotions = function(database, IML, IMjName) {
-		// Determine the scale factor required for each ground motion and scale it
-		for (var i = 0; i < database.length; ++i) {
-			var groundMotion = database[i];
-			var IMjValue = groundMotion.IM[IMjName];
-			var index = getScaleFactorIndex(IMjName);
-			var scaleFactor = Math.pow(IML / IMjValue, 1.0 / index);
-			
-			// Scale each intensity measure of the ground motion
-			groundMotion.scaledIM = {};
-			for (var IMname in groundMotion.IM) {
-				var IMvalue = groundMotion.IM[IMname];
-				var index = getScaleFactorIndex(IMname);
-				groundMotion.scaledIM[IMname] = IMvalue * Math.pow(scaleFactor,index);
+	return {
+		/***************************************************************
+			"Private" functions that are only exposed for unit testing.
+		***************************************************************/
+		getScaleFactorIndex: function(IMName) {
+			// Based on the name of the IM, returns an index of 0, 1, or 2.
+			// This index is used in the relation
+			//     ScaledIMiValues = UnscaledIMiValues*(Scalefactors^index);
+			// Ds575, Ds595 are constant with scale factor so index = 0
+			// PGA, PGV, SA etc are linear with scale factor so index = 1
+			// IA is quadratic with scale factor so index = 2
+			if (IMName == 'Ds595' || IMName == 'Ds575') {
+				return 0.0;
+			} else if (IMName == 'PGA' || IMName == 'PGV' || IMName.substr(0,2) == 'SA' ||
+								 IMName == 'CAV' || IMName == 'ASI' || IMName == 'SI' || IMName == 'DSI') {
+				return 1.0;
+			} else if (IMName == 'IA') {
+				return 2.0;
+			} else {
+				error('We don\'t know what scale factor index to use for ' + IMName);
+				return NaN;
 			}
-		}
-	};
-	
-	// Select the actual ground motions that best fit a sample of simulated ones. 
-	var selectBestFittingGroundMotions = function(database, GCIMdata, sampleIndices) {
-		var selectedGroundMotions = [];
-		for (var i = 0; i < sampleIndices.length; ++i) {
-			var realizationIndex = sampleIndices[i];
-			
-			// Loop over all of the actual ground motions and select the best fitting one.
-			var minResidual = Number.MAX_VALUE;
-			var minResidualIndex = -1;
-			for (var j = 0; j < database.length; ++j) {
-				var groundMotion = database[j];
-				var residuals = [];
-				var residualSum = 0;
-				// Loop over the IMs and calculate the residual for each.
-				for (var k = 0; k < GCIMdata.numIMi; ++k) {
-					var im = GCIMdata.IMi[k];
-					var scaledActualValue = groundMotion.scaledIM[im.name];
-					var simulatedValue = im.realizations[realizationIndex][0];
-					var simulatedSigma = im.realizations[realizationIndex][1];
-					var residual = im.weighting * Math.pow(Math.log(scaledActualValue / simulatedValue) / simulatedSigma, 2);
-					residuals.push(residual);
-					residualSum += residual;
+		},
+		// Computes the median and log-normal sigma of the realizations for each IM.
+		computeMediansAndSigmas: function(GCIMdata) {
+			for (var i = 0; i < GCIMdata.numIMi; ++i) {
+				var IMi = GCIMdata.IMi[i];
+				// Swap the x and y of the CDF for interpolation
+				var values = $.map(IMi.GCIMvalues, function(val, i) {
+					return [[val[1], val[0]]];
+				});
+				var median = util.interp_array(values, 0.5);
+				var x84 = util.interp_array(values, 0.84);
+				var x16 = util.interp_array(values, 0.16);
+				var sigma = 0.5 * Math.log(x84 / x16);
+				
+				IMi.median = median;
+				IMi.sigma = sigma;
+			}
+		},
+		// Scales a database of actual ground motions, given the IML and conditioning IM.
+		scaleGroundMotions: function(database, IML, IMjName) {
+			// Determine the scale factor required for each ground motion and scale it
+			for (var i = 0; i < database.length; ++i) {
+				var groundMotion = database[i];
+				var IMjValue = groundMotion.IM[IMjName];
+				var index = this.getScaleFactorIndex(IMjName);
+				var scaleFactor = Math.pow(IML / IMjValue, 1.0 / index);
+				
+				// Scale each intensity measure of the ground motion
+				groundMotion.scaledIM = {};
+				for (var IMname in groundMotion.IM) {
+					var IMvalue = groundMotion.IM[IMname];
+					var index = this.getScaleFactorIndex(IMname);
+					groundMotion.scaledIM[IMname] = IMvalue * Math.pow(scaleFactor,index);
+				}
+			}
+		},
+		// Select the actual ground motions that best fit a sample of simulated ones. 
+		selectBestFittingGroundMotions: function(database, GCIMdata, sampleIndices) {
+			var selectedGroundMotions = [];
+			for (var i = 0; i < sampleIndices.length; ++i) {
+				var realizationIndex = sampleIndices[i];
+				
+				// Loop over all of the actual ground motions and select the best fitting one.
+				var minResidual = Number.MAX_VALUE;
+				var minResidualIndex = -1;
+				for (var j = 0; j < database.length; ++j) {
+					var groundMotion = database[j];
+					var residuals = [];
+					var residualSum = 0;
+					// Loop over the IMs and calculate the residual for each.
+					for (var k = 0; k < GCIMdata.numIMi; ++k) {
+						var im = GCIMdata.IMi[k];
+						var scaledActualValue = groundMotion.scaledIM[im.name];
+						var simulatedValue = im.realizations[realizationIndex][0];
+						var simulatedSigma = im.realizations[realizationIndex][1];
+						var residual = im.weighting * Math.pow(Math.log(scaledActualValue / simulatedValue) / simulatedSigma, 2);
+						residuals.push(residual);
+						residualSum += residual;
+					}
+					
+					if (residualSum < minResidual) {
+						minResidual = residualSum;
+						minResidualIndex = j;
+					}
 				}
 				
-				if (residualSum < minResidual) {
-					minResidual = residualSum;
-					minResidualIndex = j;
-				}
+				// Add metadata about the selection process for debugging.
+				database[minResidualIndex].residual = minResidual;
+				database[minResidualIndex].index = minResidualIndex;
+				// Store the best-fitting ground motion.
+				selectedGroundMotions.push(database[minResidualIndex]);
 			}
-			
-			// Add metadata about the selection process for debugging.
-			database[minResidualIndex].residual = minResidual;
-			database[minResidualIndex].index = minResidualIndex;
-			// Store the best-fitting ground motion.
-			selectedGroundMotions.push(database[minResidualIndex]);
-		}
-		return selectedGroundMotions;
-	};
-	
-	return {
-		// "Private" functions that are only exposed for unit testing.
-		getScaleFactorIndex: getScaleFactorIndex,
-		computeMediansAndSigmas: computeMediansAndSigmas,
-		scaleGroundMotions: scaleGroundMotions,
-		selectBestFittingGroundMotions: selectBestFittingGroundMotions,
+			return selectedGroundMotions;
+		},
 		
+		/***************************************************************
+			"Public" functions.
+		***************************************************************/
 		// The main algorithm itself.
 		selectGroundMotions: function(GCIMdata, database, debugOutputFunc,
 																	Ngms, Nreplicates, repeatability, alpha) {
@@ -158,10 +155,10 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 			
 			// Get the approximate median and lognormal sigma for each GCIM distribution
 			// (for use in approximate bias assessment)
-			computeMediansAndSigmas(GCIMdata);
+			this.computeMediansAndSigmas(GCIMdata);
 			
 			// TODO: Remove IMs that are not used in this analysis.
-			scaleGroundMotions(database, GCIMdata.IML, GCIMdata.IMjName);
+			this.scaleGroundMotions(database, GCIMdata.IML, GCIMdata.IMjName);
 			
 			// Step 5: loop over the number of replicates to consider
 			if (repeatability) {
@@ -176,7 +173,7 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 				// Get a random sample of simulated ground motions (a "replicate")
 				//replicateIndex.push(util.sample(Ngms));
 				replicateIndex.push([23,91,30,7,41,20,98,90,24,54,84,14,49,50,26,29,93,38,25,1,87,86,28,96,67,94,52,48,71,68]);
-				var selectedGroundMotions = selectBestFittingGroundMotions(database, GCIMdata, replicateIndex[k]);
+				var selectedGroundMotions = this.selectBestFittingGroundMotions(database, GCIMdata, replicateIndex[k]);
 				selectedGroundMotionReplicateIndex.push(selectedGroundMotions);
 				
 				// Print debug output for the selected ground motions
