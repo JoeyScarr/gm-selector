@@ -5,6 +5,13 @@
 describe('Selection module', function(){
 	beforeEach(module('selection'));
 	beforeEach(module('NGAdatabase'));
+	beforeEach(module('OpenSHAresults'));
+	beforeEach(inject(function(database, NGAdatabase) {
+		spyOn(database, 'fetchDatabase').andCallFake(function(name, callback) {
+			// Clone the database before converting it, since it will be converted in-place.
+			callback(JSON.parse(JSON.stringify(NGAdatabase)));
+		});
+	}));
 	
 	describe('getScaleFactorIndex', function() {
 		it('should return correct scale factors', inject(function(gmSelector) {
@@ -154,9 +161,6 @@ describe('Selection module', function(){
 	
 	describe('loadDatabase', function() {
 		it('should convert the database into the correct named-column format', inject(function(database, NGAdatabase) {
-			spyOn(database, 'fetchDatabase').andCallFake(function(name, callback) {
-				callback(NGAdatabase);
-			});
 			var testCallback = function(data) {
 				expect(data.length).toEqual(NGAdatabase.length);
 				expect(data[0]).toEqual({"DatabaseName":"NGAdatabase","GMID":12,"EQID":12,"Mw":7.36,"mech":2,"Ztor":0,"Rjb":114.62,"Rrup":117.75,"Vs30":316.5,"freqMin":0.25,"IM":{"PGA":0.0537,"PGV":7.59,"SA (0.01s)":0.05379,"SA (0.02s)":0.054018,"SA (0.03s)":0.054534,"SA (0.04s)":0.056028,"SA (0.05s)":0.05718,"SA (0.075s)":0.062887,"SA (0.1s)":0.066343,"SA (0.15s)":0.09634,"SA (0.2s)":0.119245,"SA (0.25s)":0.132843,"SA (0.3s)":0.135557,"SA (0.4s)":0.132666,"SA (0.5s)":0.142378,"SA (0.75s)":0.1088,"SA (1.0s)":0.115335,"SA (1.5s)":0.077779,"SA (2.0s)":0.036093,"SA (3.0s)":0.035645,"SA (4.0s)":0.026136,"SA (5.0s)":0.01294,"SA (7.5s)":0.003535,"SA (10.0s)":0.001858,"IA":0.098085,"Ds595":30.6,"Ds575":17.627,"CAV":0.42985,"ASI":0.049632,"SI":32.015,"DSI":24.176}});
@@ -164,6 +168,23 @@ describe('Selection module', function(){
 			database.loadDatabase('NGAdatabase', testCallback);
 			expect(database.fetchDatabase.calls.length).toEqual(1);
 			expect(database.fetchDatabase.mostRecentCall.args[0]).toEqual('NGAdatabase');
+		}));
+	});
+	
+	describe('selectBestFittingGroundMotions', function() {
+		it('should return the best fitting ground motions', inject(function(gmSelector, database, OpenSHAresults) {
+			var sampleIndices = [23,91,30,7,41,20,98,90,24,54,84,14,49,50,26,29,93,38,25,1,87,86,28,96,67,94,52,48,71,68];
+			database.loadDatabase('NGAdatabase', function(data) {
+				gmSelector.scaleGroundMotions(data, 0.5715106, 'PGA');
+				var result = gmSelector.selectBestFittingGroundMotions(data, OpenSHAresults, sampleIndices);
+				expect(result.length).toEqual(sampleIndices.length);
+				expect(result[0].index).toEqual(153);
+				expect(result[0].residual).toBeCloseTo(0.492705, 6);
+				expect(result[1].index).toEqual(410);
+				expect(result[1].residual).toBeCloseTo(0.756737, 6);
+				expect(result[29].index).toEqual(428);
+				expect(result[29].residual).toBeCloseTo(0.626665, 6);
+			});
 		}));
 	});
 });
