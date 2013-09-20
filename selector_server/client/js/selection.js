@@ -116,13 +116,11 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 		
 		// The main algorithm itself.
 		selectGroundMotions: function(GCIMdata, database, debugOutputFunc,
-																	Ngms, Nreplicates, repeatability, allowAsRecordedMotions,
-																	alpha) {
+																	Ngms, Nreplicates, repeatability, alpha) {
 			// Parameter default values
 			Ngms = util.defaultFor(Ngms, 30);
 			Nreplicates = Math.max(1, util.defaultFor(Nreplicates, 1));
 			repeatability = util.defaultFor(repeatability, true);
-			allowAsRecordedMotions = util.defaultFor(allowAsRecordedMotions, true);
 			alpha = util.defaultFor(alpha, 0.1);
 			
 			// Do some bounds checking.
@@ -162,11 +160,8 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 			// (for use in approximate bias assessment)
 			computeMediansAndSigmas(GCIMdata);
 			
-			// TODO: Ask Brendon what this check is for.
-			if (allowAsRecordedMotions) {
-				// TODO: Remove IMs that are not used in this analysis.
-				scaleGroundMotions(database, GCIMdata.IML, GCIMdata.IMjName);
-			}
+			// TODO: Remove IMs that are not used in this analysis.
+			scaleGroundMotions(database, GCIMdata.IML, GCIMdata.IMjName);
 			
 			// Step 5: loop over the number of replicates to consider
 			if (repeatability) {
