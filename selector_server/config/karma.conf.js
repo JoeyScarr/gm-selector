@@ -8,7 +8,8 @@ module.exports = function(config) {
 			'client/js/lib/*.js',
 			'client/js/*.js',
 			'test/lib/angular-mocks.js',
-			'test/unit/**/*.js'
+			'test/unit/**/*.js',
+			'test/data/**/*.js'
 		],
 		
 		reporters: ['progress', 'junit'],

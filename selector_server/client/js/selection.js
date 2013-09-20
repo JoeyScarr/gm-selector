@@ -221,12 +221,22 @@ MOD_selection.factory('database', ['$http', function($http) {
 	var IMNames = ['PGA','PGV','SA (0.01s)','SA (0.02s)','SA (0.03s)','SA (0.04s)','SA (0.05s)','SA (0.075s)','SA (0.1s)','SA (0.15s)',
     'SA (0.2s)','SA (0.25s)','SA (0.3s)','SA (0.4s)','SA (0.5s)','SA (0.75s)','SA (1.0s)','SA (1.5s)','SA (2.0s)','SA (3.0s)','SA (4.0s)',
     'SA (5.0s)','SA (7.5s)','SA (10.0s)','IA','Ds595','Ds575','CAV','ASI','SI','DSI'];
+	
 	return {
-		// Loads a database from the server.
-		// Calls callback with the data when it arrives, or error if something goes wrong.
-		loadDatabase: function(dbName, callback, errorCallback) {
+		// Retrieves a database from the server with a JSON call.
+		fetchDatabase: function(dbName, callback, errorCallback) {
 			$http.get('data/' + dbName + '.json')
 				.success(function(data, status, headers, config) {
+					callback(data);
+				}).error(function(data, status, headers, config) {
+					errorCallback(status);
+				});
+		},
+		
+		// Loads a database from the server, giving meaningful names to numerical fields.
+		// Calls callback with the data when it arrives, or error if something goes wrong.
+		loadDatabase: function(dbName, callback, errorCallback) {
+			this.fetchDatabase(dbName, function(data) {
 					// Convert the array data into objects.
 					for (var i = 0; i < data.length; i++) {
 						var convertedData = {
@@ -248,9 +258,7 @@ MOD_selection.factory('database', ['$http', function($http) {
 						data[i] = convertedData;
 					}
 					callback(data);
-				}).error(function(data, status, headers, config) {
-					errorCallback(status);
-				});
+				}, errorCallback);
 		}
 	};
 }]);
