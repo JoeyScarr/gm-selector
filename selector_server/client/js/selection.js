@@ -188,11 +188,10 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 				// 'global' residual for this replicate, R (see Eqn 11)
 				var rSum = 0;
 				for (var i = 0; i < GCIMdata.numIMi; ++i) {
-					var weight = GCIMdata.IMi[i].weighting;
-					// TODO: Go over this with Brendon
-					var targetCDF = [];
-					var ks = util.ks_critical_value(Ngms, alpha);
-					rSum += weight * ks * ks;
+					var im = GCIMdata.IMi[i];
+					var ks = util.ks_diff(selectedGroundMotions, im);
+					
+					rSum += im.weighting * ks * ks;
 				}
 				R.push(rSum);
 				if (rSum < minR) {

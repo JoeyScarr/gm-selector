@@ -162,6 +162,40 @@ MOD_util.factory('util', function() {
 				error('alpha ' + alpha1 + ' was outside the required bounds [0.005,0.10]');
 				return null;
 			}
+		},
+		ks_diff: function(groundMotions, im) {
+			// First extract the values for this IM from the selected ground motions.
+			var actualValues = [];
+			for (var i = 0; i < groundMotions.length; ++i) {
+				actualValues.push(groundMotions[i].scaledIM[im.name]);
+			}
+			
+			// Build the CDF.
+			var actualCDF = [];
+			// First, sort in ascending order.
+			actualValues.sort(function(a,b){return a-b;});
+			// Then iterate over all realizations and count them.
+			var count = 0.0;
+			for (var i = 0; i < actualValues.length; ++i) {
+				actualCDF.push([actualValues[i], count / actualValues.length]);
+				count += 1.0;
+				actualCDF.push([actualValues[i], count / actualValues.length]);
+			}
+			
+			// Find the largest distance between the actual CDF and the target CDF (from the GCIM input).
+			var maxDiff = 0;
+			for (var i = 0; i < actualCDF.length; ++i) {
+				var diff;
+				if (actualCDF[i][0] < im.GCIMvalues[0][0]) {
+					diff = actualCDF[i][1]; // This x-value falls before the beginning of the target CDF
+				} else if (actualCDF[i][0] > im.GCIMvalues[im.GCIMvalues.length-1][0]) {
+					diff = 1 - actualCDF[i][1]; // This x-value falls past the end of the target CDF
+				} else {
+					diff = Math.abs(actualCDF[i][1] - interp_array(im.GCIMvalues, actualCDF[i][0]));
+				}
+				maxDiff = Math.max(maxDiff, diff);
+			}
+			return maxDiff;
 		}
 	};
 });
