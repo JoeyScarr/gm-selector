@@ -86,6 +86,23 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 		var charts = [];
 		for (var i = 0; i < data.numIMi; ++i) {
 			var IMi = data.IMi[i];
+			
+			// Calculate KS bounds.
+			var ksCriticalValue = util.ks_critical_value(data.numIMiRealizations, 0.05);
+			var upperKSbound = [];
+			var lowerKSbound = [];
+			for (var j = 0; j < IMi.GCIMvalues.length; ++j) {
+				var x = IMi.GCIMvalues[j][0];
+				var y_upper = IMi.GCIMvalues[j][1] + ksCriticalValue;
+				var y_lower = IMi.GCIMvalues[j][1] - ksCriticalValue;
+				if (y_upper <= 1) {
+					upperKSbound.push([x, y_upper]);
+				}
+				if (y_lower >= 0) {
+					lowerKSbound.push([x, y_lower]);
+				}
+			}
+			
 			var chart = {
 				name: IMi.name,
 				xAxisLabel: IMi.name,
@@ -102,6 +119,18 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 						'isDiscrete': true,
 						'data': IMi.realizationCDF,
 						'color': 'blue'
+					},
+					{
+						'name': 'Upper KS bound (\u03b1 = 0.05)',
+						'isDiscrete': true,
+						'data': upperKSbound,
+						'color': 'red'
+					},
+					{
+						'name': 'Lower KS bound (\u03b1 = 0.05)',
+						'isDiscrete': true,
+						'data': lowerKSbound,
+						'color': 'red'
 					}
 				]
 			}
