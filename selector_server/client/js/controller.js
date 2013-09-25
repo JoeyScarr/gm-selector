@@ -41,6 +41,8 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 		{name:'NGAdatabase', label:'NGA Database'}
 	];
 	
+	$scope.alpha = 0.10;
+	
 	$scope.input = null;
 	$scope.chartData = [];
 	$scope.visibleChart = 'SA';
@@ -88,7 +90,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 			var IMi = data.IMi[i];
 			
 			// Calculate KS bounds.
-			var ksCriticalValue = util.ks_critical_value(data.numIMiRealizations, 0.05);
+			var ksCriticalValue = util.ks_critical_value(data.numIMiRealizations, $scope.alpha);
 			var upperKSbound = [];
 			var lowerKSbound = [];
 			for (var j = 0; j < IMi.GCIMvalues.length; ++j) {
@@ -121,13 +123,13 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 						'color': 'blue'
 					},
 					{
-						'name': 'Upper KS bound (\u03b1 = 0.05)',
+						'name': 'Upper KS bound (\u03b1 = ' + $scope.alpha + ')',
 						'isDiscrete': true,
 						'data': upperKSbound,
 						'color': 'red'
 					},
 					{
-						'name': 'Lower KS bound (\u03b1 = 0.05)',
+						'name': 'Lower KS bound (\u03b1 = ' + $scope.alpha + ')',
 						'isDiscrete': true,
 						'data': lowerKSbound,
 						'color': 'red'
