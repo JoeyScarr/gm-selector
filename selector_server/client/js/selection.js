@@ -61,6 +61,7 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 				var scaleFactor = Math.pow(IML / IMjValue, 1.0 / index);
 				
 				// Scale each intensity measure of the ground motion
+				groundMotion.scaleFactor = scaleFactor;
 				groundMotion.scaledIM = {};
 				for (var IMname in groundMotion.IM) {
 					var IMvalue = groundMotion.IM[IMname];
@@ -189,9 +190,10 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 				var rSum = 0;
 				for (var i = 0; i < GCIMdata.numIMi; ++i) {
 					var im = GCIMdata.IMi[i];
-					var ks = util.ks_diff(selectedGroundMotions, im);
+					var ksDiff = util.ks_diff(selectedGroundMotions, im);
+					im.ksDiff = ksDiff;
 					
-					rSum += im.weighting * ks * ks;
+					rSum += im.weighting * ksDiff * ksDiff;
 				}
 				R.push(rSum);
 				if (rSum < minR) {
@@ -205,9 +207,19 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 			debugOutputFunc('R: ' + minR);
 			debugOutputFunc('Simulated realizations used: ' + JSON.stringify(replicateIndex[minRIndex]));
 			debugOutputFunc('Ground motions selected:');
-			debugOutputFunc(JSON.stringify(selectedGroundMotionReplicateIndex[minRIndex],null,2));
+			var selectedGMIDs = $.map(selectedGroundMotionReplicateIndex[minRIndex], function(gm) {
+				return gm.GMID;
+			});
+			debugOutputFunc(JSON.stringify(selectedGMIDs));
 			
-			return selectedGroundMotionReplicateIndex[minRIndex];
+			var output = {
+				selectedGroundMotions: selectedGroundMotionReplicateIndex[minRIndex],
+				R: minR,
+				ksCriticalValue: util.ks_critical_value(Ngms, alpha),
+				IMi: GCIMdata.IMi
+			};
+			
+			return output;
 		}
 	};
 }]);

@@ -48,6 +48,8 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 	$scope.visibleChart = 'SA';
 	$scope.selectionOutput = null;
 	$scope.selectionOutputString = null;
+	
+	$scope.debug = false;
 	$scope.debugOutput = null;
 	
 	$scope.dbLoaded = false;
@@ -80,7 +82,62 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 			function(output) {
 				$scope.debugOutput += output + '\n';
 			});
-		$scope.selectionOutputString = JSON.stringify($scope.selectionOutput, null, 2);
+		$scope.selectionOutputString = $scope.formatOutput($scope.selectionOutput);
+	};
+	
+	$scope.formatOutput = function(output) {
+		// Print the KS test statistic for each IM
+		var outputString = 'Critical KSstat (Dcrit) is ' + output.ksCriticalValue + '.\n';
+		outputString += 'KSstat values for IMs:\n'
+		var biasedCount = 0;
+		for (var i = 0; i < output.IMi.length; ++i) {
+			var im = output.IMi[i];
+			var line = '    ' + im.name + ':';
+			while (line.length < 16) {
+				line += ' ';
+			}
+			line += im.ksDiff.toFixed(6);
+			if (im.ksDiff > output.ksCriticalValue) {
+				line += ' (biased)';
+				biasedCount++;
+			}
+			outputString += line + '\n';
+		}
+		outputString += 'The GMs selected are biased for ' + biasedCount + '/' + output.IMi.length + ' IMs considered.\n\n'
+		
+		// Print the selected ground motions
+		outputString += 'The selected set of ground motions has a total residual of R=sum(wi*KS^2)=' + output.R.toFixed(6) + '\n\n';
+		
+		outputString += 'Ground motions selected and amplitude scale factors:\n'
+		outputString += sprintf('%10s %-13s %14s  %10s %12s %12s %12s %12s\n', 'GM', 'DatabaseName', 'GroundMotionID', 'ScaleFactor', 'Mw', 'Rrup', 'Vs30', 'fmin');
+		for (var i = 0; i < output.selectedGroundMotions.length; ++i) {
+			var gm = output.selectedGroundMotions[i];
+			outputString += sprintf('%10d %-13s %14d  %10.6f %12.2f %12.2f %12.2f %12.2f\n', i + 1, gm.DatabaseName, gm.GMID, gm.scaleFactor, gm.Mw, gm.Rrup, gm.Vs30, gm.freqMin);
+		}
+		outputString += '\n';
+		
+		// Print the IMi values for each ground motion
+		outputString += 'Scaled IM values of selected ground motions:\n'
+		var formatString = '         GM';
+		var IMnames = [];
+		for (var i = 0; i < output.IMi.length; ++i) {
+			formatString += ' %10s';
+			IMnames.push(output.IMi[i].name);
+		}
+		outputString += vsprintf(formatString + '\n', IMnames);
+		for (var i = 0; i < output.selectedGroundMotions.length; ++i) {
+			var gm = output.selectedGroundMotions[i];
+			var formatString = ' %10d';
+			var IMvalues = [i + 1];
+			for (var j = 0; j < output.IMi.length; ++j) {
+				formatString += ' %10.3f';
+				IMvalues.push(gm.scaledIM[output.IMi[j].name]);
+			}
+			var gm = output.selectedGroundMotions[i];
+			outputString += vsprintf(formatString + '\n', IMvalues);
+		}
+		
+		return outputString;
 	};
 	
 	// Generates and returns charts for the parsed input data.

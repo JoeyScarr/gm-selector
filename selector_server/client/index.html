@@ -8,6 +8,7 @@
 		<!-- Third-party libraries -->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
 		<script src="js/lib/seedrandom-min.js"></script>
+		<script src="js/lib/sprintf.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.0.8/d3.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
@@ -97,14 +98,18 @@
 					</div>
 				</div>
 			</div>
+			<h3 ng-show="!!selectionOutput">Output</h3>
+			<span ng-show="!!selectionOutput">
+				<pre>{{ selectionOutputString }}</pre>
+			</span>
 			
 			<!-- Debug stuff goes down here -->
-			<h3>Debug output</h3>
-			<span ng-show="dbLoaded">
+			<h3 ng-show="debug">Debug output</h3>
+			<span ng-show="debug && dbLoaded">
 				<p>First line of database:</p>
 				<pre>{{ databaseFirstLine }}</pre>
 			</span>
-			<span ng-show="!!debugOutput">
+			<span ng-show="debug &&!!debugOutput">
 				<p>Algorithm output:</p>
 				<pre>{{ debugOutput }}</pre>
 			</span>
