@@ -29,6 +29,22 @@
 				<p>
 					<b>Select random realizations file (OpenSHA format): <input type="file" id="inputFileSelect" /></b>
 				</p>
+				<p>
+					<table ng-show="!!input" width="100%">
+						<tr>
+							<td>
+								<b>Conditioning IM:</b> {{ input.IMjName }} ({{ input.IML.toFixed(6) }})
+								<br />
+								<b>Prob Level:</b> {{ input.ProbLevel }}
+							</td>
+							<td>
+								<b>Number of IMs considered:</b> {{ input.numIMi }}
+								<br />
+								<b>Number of simulated ground motions:</b> {{ input.numIMiRealizations }}
+							</td>
+						</tr>
+					</table>
+				</p>
 				<p ng-show="chartData.length > 0">
 					Show chart for:
 					<select ng-model="visibleChart"
