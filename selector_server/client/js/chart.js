@@ -675,20 +675,16 @@ MOD_chart.directive('chart', function () {
 					 * Create scale buttons for switching the x-axis
 					 */
 					var createXScaleButtons = function() {
-						var cumulativeWidth = $("#" + containerId).width()-260;		
+						var cumulativeWidth = $("#" + containerId).width()-230;
+						// Create the label
 						var label = graph.append("svg:text")
 							.attr("font-size", "12")
 							.attr("font-weight", "bold")
 							.text("X-axis Scale:")
-							.attr("y", h+25)
-							.attr("x", function(d, i) {
-								// return it at the width of previous labels (where the last one ends)
-								var returnX = cumulativeWidth;
-								// increment cumulative to include this one
-								cumulativeWidth += this.getComputedTextLength()+5;
-								return returnX;
-							});
-						// append a group to contain all lines
+							.attr("y", h+28)
+							.attr("x", cumulativeWidth);
+						cumulativeWidth += 80;
+						// Create the buttons
 						var buttonGroup = graph.append("svg:g")
 							.attr("class", "x-scale-button-group")
 							.selectAll("g")
@@ -718,10 +714,10 @@ MOD_chart.directive('chart', function () {
 									// return it at the width of previous labels (where the last one ends)
 									var returnX = cumulativeWidth;
 									// increment cumulative to include this one
-									cumulativeWidth += this.getComputedTextLength()+5;
+									cumulativeWidth += 40;
 									return returnX;
 								})
-								.attr("y", h+25)
+								.attr("y", h+28)
 								.on('click', function(d, i) {
 									handleMouseClickXScaleButton(this, d, i);
 								});
@@ -757,20 +753,15 @@ MOD_chart.directive('chart', function () {
 					 * Create scale buttons for switching the y-axis
 					 */
 					var createScaleButtons = function() {
-						var cumulativeWidth = 0;
+						var cumulativeWidth = 80;
+						// Create the label
 						var label = graph.append("svg:text")
 							.attr("font-size", "12")
 							.attr("font-weight", "bold")
 							.text("Y-axis Scale:")
 							.attr("y", -4)
-							.attr("x", function(d, i) {
-									// return it at the width of previous labels (where the last one ends)
-									var returnX = cumulativeWidth;
-									// increment cumulative to include this one
-									cumulativeWidth += this.getComputedTextLength()+5;
-									return returnX;
-								});
-						// append a group to contain all lines
+							.attr("x", 0);
+						// Create the buttons
 						var buttonGroup = graph.append("svg:g")
 							.attr("class", "scale-button-group")
 							.selectAll("g")
@@ -800,14 +791,14 @@ MOD_chart.directive('chart', function () {
 									// return it at the width of previous labels (where the last one ends)
 									var returnX = cumulativeWidth;
 									// increment cumulative to include this one
-									cumulativeWidth += this.getComputedTextLength()+5;
+									cumulativeWidth += 40;
 									return returnX;
 								})
 								.attr("y", -4)
 								.on('click', function(d, i) {
 									handleMouseClickScaleButton(this, d, i);
 								});
-					}
+					};
 	
 					var handleMouseClickScaleButton = function(button, buttonData, index) {
 						yScale = buttonData[0];
@@ -830,8 +821,7 @@ MOD_chart.directive('chart', function () {
 								return false;
 							}
 						})
-						
-					}
+					};
 					
 					/**
 					 * Create a data label
@@ -840,7 +830,7 @@ MOD_chart.directive('chart', function () {
 						var date = new Date(); // placeholder just so we can calculate a valid width
 						// create the date label to the left of the scaleButtons group
 						var buttonGroup = graph.append("svg:g")
-								.attr("class", "date-label-group")
+							.attr("class", "date-label-group")
 							.append("svg:text")
 								.attr("class", "date-label")
 								.attr("text-anchor", "end") // set at end so we can position at far right edge and add text from right to left
@@ -848,8 +838,7 @@ MOD_chart.directive('chart', function () {
 								.attr("y", -4)
 								.attr("x", w)
 								.text(date.toDateString() + " " + date.toLocaleTimeString())
-								
-					}
+					};
 					
 					/**
 					 * Called when a user mouses over a line.
