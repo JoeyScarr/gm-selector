@@ -42,6 +42,9 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 	];
 	
 	$scope.alpha = 0.10;
+	$scope.Ngms = 30;
+	$scope.Nreplicates = 1;
+	$scope.repeatability = true;
 	
 	$scope.input = null;
 	$scope.chartData = [];
@@ -81,7 +84,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 		$scope.selectionOutput = gmSelector.selectGroundMotions($scope.input, $scope.databaseData,
 			function(output) {
 				$scope.debugOutput += output + '\n';
-			});
+			}, $scope.Ngms, $scope.Nreplicates, $scope.repeatability);
 		$scope.selectionOutputString = $scope.formatOutput($scope.selectionOutput);
 	};
 	

@@ -26,8 +26,13 @@ select {
 	margin-bottom:0;
 }
 
-input.weight {
+input.smallnumerical {
 	width: 50px;
+	margin-bottom:0;
+}
+
+input.mediumnumerical {
+	width: 70px;
 	margin-bottom:0;
 }
 
@@ -40,11 +45,16 @@ input.weight {
 }
 
 .weightlabel {
-	padding-left: 50px;
+	padding-left: 40px;
 	padding-right: 10px;
 }
 
 .weightinput {
 	padding-left: 10px;
-	padding-right: 50px;
+	padding-right: 40px;
+}
+
+hr {
+	margin-top: 5px;
+	margin-bottom: 5px;
 }

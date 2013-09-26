@@ -29,6 +29,7 @@
 				<p>
 					<b>Select random realizations file (OpenSHA format): <input type="file" id="inputFileSelect" /></b>
 				</p>
+				<hr />
 				<p>
 					<table ng-show="!!input" width="100%">
 						<tr>
@@ -40,7 +41,7 @@
 							<td>
 								<b>Number of IMs considered:</b> {{ input.numIMi }}
 								<br />
-								<b>Number of simulated ground motions:</b> {{ input.numIMiRealizations }}
+								<b>Number of simulated realizations:</b> {{ input.numIMiRealizations }}
 							</td>
 						</tr>
 					</table>
@@ -70,8 +71,10 @@
 				</p>
 				
 				<div ng-show="!!input">
-					<b>Choose weightings:</b>
-					<a href="#weightings" role="button" class="btn" data-toggle="modal">Weightings</a>
+					<div>
+						<b>Choose IM weightings:</b>
+						<a href="#weightings" role="button" class="btn" data-toggle="modal">Weightings</a>
+					</div>
 					
 					<!-- Modal -->
 					<div id="weightings" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
@@ -87,7 +90,7 @@
 											{{ IMi.name }}:
 										</td>
 										<td class="weightinput">
-											<input class="weight rightcol" type="number" min="0" step="any" ng-model="IMi.weighting" />
+											<input class="mediumnumerical rightcol" type="number" min="0" step="any" ng-model="IMi.weighting" />
 										</td>
 									</tr>
 								</table>
@@ -99,7 +102,7 @@
 											{{ IMi.name }}:
 										</td>
 										<td class="weightinput">
-											<input class="weight rightcol" type="number" min="0" step="any" ng-model="IMi.weighting" />
+											<input class="mediumnumerical rightcol" type="number" min="0" step="any" ng-model="IMi.weighting" />
 										</td>
 									</tr>
 								</table>
@@ -109,6 +112,22 @@
 							<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
 						</div>
 					</div>
+					
+					<div>
+						<b>Number of ground motions to select:</b>
+						<input type="number" class="smallnumerical" ng-model="Ngms" />
+					</div>
+					
+					<div>
+						<b>Number of realization samples (replicates) to analyse:</b>
+						<input type="number" class="smallnumerical" ng-model="Nreplicates" />
+					</div>
+					
+					<div>
+						<b>Repeatable (same result every time)?</b>
+						<input type="checkbox" ng-model="repeatability" />
+					</div>
+					
 					<div style="margin-top:20px">
 						<input class="btn btn-primary" type="button" ng-disabled="!dbLoaded" ng-click="selectGMs()" value="Select Ground Motions" />
 					</div>
