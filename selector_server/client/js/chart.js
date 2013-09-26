@@ -5,8 +5,6 @@ var MOD_chart = angular.module('chart', []);
 
 // Create a directive for building charts.
 MOD_chart.directive('chart', function () {
-		//var margin = 20, width = 960 - margin.left - margin.right, height = 500 - margin.top - margin.bottom;
-	
 	// Constants
 	var SCALE_LINEAR = 'linear';
 	var SCALE_LOG = 'log';
@@ -186,7 +184,6 @@ MOD_chart.directive('chart', function () {
 					var transitionDuration = 300;
 					
 					var formatNumber = d3.format(",.1e");
-					//var formatNumber = d3.format(",.3f") // for formatting integers
 					var tickFormatForLogScale = function(d) { return formatNumber(d) };
 					
 					// used to track if the user is interacting via mouse/finger instead of trying to determine
@@ -222,8 +219,7 @@ MOD_chart.directive('chart', function () {
 						// do this after processing margins and executing processDataMap above
 						initDimensions();
 						
-						createGraph()
-						// debug("Initialization successful for container: " + containerId)	
+						createGraph();
 						
 						// window resize listener
 						// de-dupe logic from http://stackoverflow.com/questions/667426/javascript-resize-event-firing-multiple-times-while-dragging-the-resize-handle/668185#668185
@@ -290,31 +286,10 @@ MOD_chart.directive('chart', function () {
 								colors[i] = "black";
 							})
 						}
-						
-						// var maxValues = [];
-						// var rounding = getOptionalVar(dataMap, 'rounding', []);
-						// default rounding values
-						// if(rounding.length == 0) {
-							// displayNames.forEach(function (v, i) {
-								// set the default to 0 decimals
-								// rounding[i] = 0;
-							// })
-						// }
-						
-						/* copy the dataValues array, do NOT assign the reference otherwise we modify the original source when we shift/push data */
-						//var newDataValues = [];
-						//dataValues.forEach(function (v, i) {
-						//	newDataValues[i] = v.slice(0);
-						//	maxValues[i] = d3.max(newDataValues[i])
-						//})
 	
 						return {
-							//"values" : newDataValues,
 							"values" : dataValues,
 							"extraPoints": extraPoints,
-							//"startTime" : startTime,
-							//"endTime" : endTime,
-							//"step" : step,
 							"names" : names,
 							"discrete": discrete,
 							"showLegend": showLegend,
@@ -324,8 +299,6 @@ MOD_chart.directive('chart', function () {
 							"scale" : getOptionalVar(dataMap, 'scale', yScale),
 							"xAxisLabel": xAxisLabel,
 							"yAxisLabel": yAxisLabel,
-							//"maxValues" : maxValues,
-							//"rounding" : rounding,
 							"numAxisLabelsLinearScale": numAxisLabelsLinearScale,
 							"numAxisLabelsPowerScale": numAxisLabelsPowerScale
 						}
@@ -428,7 +401,6 @@ MOD_chart.directive('chart', function () {
 					
 					var initYleft = function() {
 						var maxYscaleLeft = calculateMaxY(data, 'left')
-						// debug("initY => maxYscale: " + maxYscaleLeft);
 						var numAxisLabels = 4;
 						if(yScale == SCALE_POWER) {
 							yLeft = d3.scale.pow().exponent(0.3).domain([0, maxYscaleLeft]).range([h, 0]).nice();	
@@ -449,7 +421,6 @@ MOD_chart.directive('chart', function () {
 						var maxYscaleRight = calculateMaxY(data, 'right')
 						// only create the right axis if it has values
 						if(maxYscaleRight != undefined) {
-							// debug("initY => maxYscale: " + maxYscaleRight);
 							var numAxisLabels = 6;
 							if(yScale == SCALE_POWER) {
 								yRight = d3.scale.pow().exponent(0.3).domain([0, maxYscaleRight]).range([h, 0]).nice();		
@@ -471,11 +442,6 @@ MOD_chart.directive('chart', function () {
 					 * Allow re-initializing the x function at any time.
 					 */
 					var initX = function() {
-						//x = d3.scale.log().range([0, w]);
-						//x.domain([calculateMinX(), calculateMaxX()])
-						// create yAxis (with ticks)
-						//xAxis = d3.svg.axis().scale(x).tickSize(-h,0,0).tickSubdivide(0);
-						
 						var numAxisLabels = 5; //TODO:this needs to be re-usable
 						if(xScale == SCALE_POWER) {
 							x = d3.scale.pow().exponent(0.3).domain([calculateMinX(), calculateMaxX()]).range([0, w]).nice();	
@@ -546,20 +512,13 @@ MOD_chart.directive('chart', function () {
 								.call(yAxisRight);
 						}
 						
-						//data.values.forEach( function(v,k) { 
-						
 						// create line function used to plot our data
 						lineFunction = d3.svg.line()
 							.x(function(d,i) { 
-								var _x = x(d[0]); 
-								// debug("Line X => index: " + d + " scale: " + _x)
+								var _x = x(d[0]);
 								return _x;
 								})
-							.y(function(d, i) { 
-								//if(yScale == 'log' && d < 0.1) {
-								//	// log scale can't have 0s, so we set it to the smallest value we set on y
-								//	d = 0.1;
-								//}
+							.y(function(d, i) {
 								if(i == 0) {
 									lineFunctionSeriesIndex++;
 								}
@@ -570,17 +529,8 @@ MOD_chart.directive('chart', function () {
 								} else {
 									_y = yLeft(d[1]); 
 								}
-	
-								// verbose logging to show what's actually being done
-								// debug("Line Y => data: " + d + " scale: " + _y)
-								// return the Y coordinate where we want to plot this datapoint
 								return _y;
 							});
-							// .defined(function(d) {
-								// handle missing data gracefully
-								// feature added in https://github.com/mbostock/d3/pull/594
-								// return d >= 0;
-							// });
 							
 							
 						// add a group of points to display extra point data
@@ -647,14 +597,12 @@ MOD_chart.directive('chart', function () {
 						// add path (the actual line) to line group
 						linesGroup.append("path")
 								.attr("class", function(d, i) {
-									// debug("Appending line [" + containerId + "]: " + i)
 									return "line series_" + i;
 								})
 								.attr("fill", "none")
 								.attr("stroke", function(d, i) {
 									return data.colors[i];
 								})
-								//.attr("stroke", data.colors[k])
 								.attr("d", lineFunction) // use the 'lineFunction' to create the data points in the correct x,y axis
 								
 								.on('mouseover', function(d, i) {
@@ -696,23 +644,19 @@ MOD_chart.directive('chart', function () {
 								}
 								return discreteColors[lineFunctionSeriesIndex];
 							});
-						
-						
-								
+							
 						// add line label to line group
 						linesGroupText = linesGroup.filter(function(d, i) {
 								return data.showLegend[i];
 							})
 							.append("svg:text");
 						linesGroupText.attr("class", function(d, i) {
-								// debug("Appending line [" + containerId + "]: " + i)
 								return "line_label series_" + i;
 							})
 							.text(function(d, i) {
 									return "";
 								});
 						
-						//});		//end of foreach in data
 						
 						// add a 'hover' line that we'll show as a user moves their mouse (or finger)
 						// so we can use it to show detailed values of each line
@@ -735,7 +679,6 @@ MOD_chart.directive('chart', function () {
 						createXAxisLabel();
 						createYAxisLabel();
 						setValueLabelsToLatest();
-						//createPropertiesButtons();
 					}
 					
 					var createXAxisLabel = function() {
@@ -786,7 +729,6 @@ MOD_chart.directive('chart', function () {
 									return data.colors[i];
 								})
 								.attr("y", function(d, i) {
-									//return h+28+;
 									return 20+i*20;
 								})
 	
@@ -799,19 +741,15 @@ MOD_chart.directive('chart', function () {
 									return data.colors[i];
 								})
 								.attr("y", function(d, i) {
-									//return h+28;
 									return 20+i*20;
 								})		
 						
-	
 						var cumulativeWidth = 0;
 						var labelNameEnd = [];
 						graph.selectAll("text.legend.name")
 								.attr("x", function(d, i) {
-									return $("#" + containerId).width()-240;		//return returnX;
+									return $("#" + containerId).width()-240;
 								})
-						
-						// x values are not defined here since those get dynamically calculated when data is set in displayValueLabelsForPositionX()
 					}
 					
 					/**
@@ -993,41 +931,11 @@ MOD_chart.directive('chart', function () {
 								.text(date.toDateString() + " " + date.toLocaleTimeString())
 								
 					}
-	
-					/*var createPropertiesButtons = function() {
-						var cumulativeWidthProperties = 0;		
-						// append a group to contain all lines
-						var buttonGroup = graph.append("svg:g")
-								.attr("class", "properties-button-group")
-							.append("g")
-								.attr("class", "properties-buttons")
-							.append("svg:text")
-								.attr("class", "properties-button")
-								.text("Graph Settings")
-								.attr("font-size", "12") // this must be before "x" which dynamically determines width
-								.attr("x", w-300)
-								.attr("y", -4)
-								.on('click', function(d, i) {
-								
-	
-									alert("here soon...");
-									// argsMap.data.limits.xmin = 1;
-									// argsMap.data.limits.xmax = 100;
-									// initY();
-									// initX();
-									// redrawAxes(true);
-									// redrawLines(true);
-								});
-					}*/
-					
-					
 					
 					/**
 					 * Called when a user mouses over a line.
 					 */
 					var handleMouseOverLine = function(lineData, index) {
-						// debug("MouseOver line [" + containerId + "] => " + index)
-						
 						// user is interacting
 						userCurrentlyInteracting = true;
 					}
@@ -1039,7 +947,6 @@ MOD_chart.directive('chart', function () {
 						var mouseX = event.pageX-hoverLineXOffset;
 						var mouseY = event.pageY-hoverLineYOffset;
 						
-						// debug("MouseOver graph [" + containerId + "] => x: " + mouseX + " y: " + mouseY + "  height: " + h + " event.clientY: " + event.clientY + " offsetY: " + event.offsetY + " pageY: " + event.pageY + " hoverLineYOffset: " + hoverLineYOffset)
 						if(mouseX >= 0 && mouseX <= w && mouseY >= 0 && mouseY <= h) {
 							//show the hover line
 							hoverLine.classed("hide", false);
@@ -1064,8 +971,6 @@ MOD_chart.directive('chart', function () {
 						hoverLine.classed("hide", true);
 						
 						setValueLabelsToLatest();
-						
-						//// debug("MouseOut graph [" + containerId + "] => " + mouseX + ", " + mouseY)
 						
 						//user is no longer interacting
 						userCurrentlyInteracting = false;
@@ -1109,37 +1014,12 @@ MOD_chart.directive('chart', function () {
 							labelValueWidths[i] = this.getComputedTextLength(); 
 						})
 	
-						// position label names
-						var cumulativeWidth = 0;
-						var labelNameEnd = [];
-
-						// remove last bit of padding from cumulativeWidth
-						cumulativeWidth = cumulativeWidth - 8;
-	
-						if(cumulativeWidth > w) {
-							// decrease font-size to make fit
-							legendFontSize = legendFontSize-1;
-							// debug("making legend fit by decreasing font size to: " + legendFontSize)
-							graph.selectAll("text.legend.name")
-								.attr("font-size", legendFontSize);
-							graph.selectAll("text.legend.value")
-								.attr("font-size", legendFontSize);
-							
-							// recursively call until we get ourselves fitting
-							displayValueLabelsForPositionX(xPosition);
-							return;
-						}
-	
 						// position label values
 						graph.selectAll("text.legend.value")
 						.attr("x", function(d, i) {
 							//return labelNameEnd[i];
 							return $("#" + containerId).width()-230;	
-						})
-						
-	
-						// show the date
-						//graph.select('text.date-label').text(dateToShow.toDateString() + " " + dateToShow.toLocaleTimeString())
+						});
 					}
 					
 					/**
@@ -1182,10 +1062,6 @@ MOD_chart.directive('chart', function () {
 					 * Set height/width dimensions based on container.
 					 */
 					var initDimensions = function() {
-						//w = $("#" + containerId).width() - margin[1] - margin[3]; // width
-						//h = $("#" + containerId).height() - margin[0] - margin[2]; // height
-						//hoverLineXOffset = margin[3]+$(container).offset().left;
-						//hoverLineYOffset = margin[0]+$(container).offset().top;
 						w = parseInt(width) - margin[1] - margin[3]; // width
 						h = parseInt(height) - margin[0] - margin[2]; // height
 						hoverLineXOffset = margin[3]+$(container).offset().left;
@@ -1221,34 +1097,9 @@ MOD_chart.directive('chart', function () {
 					var error = function(message) {
 						console.log("ERROR: " + message)
 					}
-	
-					var debug = function(message) {
-						console.log("// debug: " + message)
-					}
-					
-					/* round a number to X digits: num => the number to round, dec => the number of decimals */
-					/* private */ function roundNumber(num, dec) {
-						var result = Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
-						var resultAsString = result.toString();
-						if(dec > 0) {
-							if(resultAsString.indexOf('.') == -1) {
-								resultAsString = resultAsString + '.';
-							}
-							// make sure we have a decimal and pad with 0s to match the number we were asked for
-							var indexOfDecimal = resultAsString.indexOf('.');
-							while(resultAsString.length <= (indexOfDecimal+dec)) {
-								resultAsString = resultAsString + '0';
-							}
-						}
-						return resultAsString;
-					};
 					
 					_init();
-				};			
-				
-				
-				
-				
+				};
 			};
 		}
 	};
