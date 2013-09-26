@@ -135,8 +135,6 @@ MOD_chart.directive('chart', function () {
 				 *		 names => The metric name for each array of data. [REQUIRED]
 				 *		 displayNames => Display name for each metric. [OPTIONAL => Default: same as 'names' argument]
 				 *				Example: ['MetricA', 'MetricB'] 
-				 *		 axis => Which axis (left/right) to put each metric on. [OPTIONAL => Default: Display all values on single axis]
-				 *				Example: ['left', 'right', 'right'] to display first metric on left axis, next two on right axis.
 				 *		 colors => What color to use for each metric. [OPTIONAL => Default: black]
 				 *				Example: ['blue', 'red'] to display first metric in blue and second in red.
 				 *		 scale => What scale to display the graph with. [OPTIONAL => Default: linear]
@@ -164,7 +162,7 @@ MOD_chart.directive('chart', function () {
 					var container;
 					
 					// functions we use to display and interact with the graphs and lines
-					var graph, x, yLeft, yRight, xAxis, yAxisLeft, yAxisRight, yAxisLeftDomainStart, linesGroup, linesGroupDiscrete, extraPointsGroup, linesGroupText, lines, lineFunction, lineFunctionSeriesIndex = -1;
+					var graph, x, yLeft, xAxis, yAxisLeft, yAxisLeftDomainStart, linesGroup, linesGroupDiscrete, extraPointsGroup, linesGroupText, lines, lineFunction, lineFunctionSeriesIndex = -1;
 					
 					var scales = [[SCALE_LINEAR,'Linear'], [SCALE_LOG,'Log']];
 					// Default scales
@@ -258,27 +256,6 @@ MOD_chart.directive('chart', function () {
 						var numAxisLabelsPowerScale = getOptionalVar(dataMap, 'numAxisLabelsPowerScale', 6); 
 						var numAxisLabelsLinearScale = getOptionalVar(dataMap, 'numAxisLabelsLinearScale', 6); 
 						
-						var axis = getOptionalVar(dataMap, 'axis', []);
-						// default axis values
-						if(axis.length == 0) {
-							displayNames.forEach(function (v, i) {
-								// set the default to left axis
-								axis[i] = "left";
-							})
-						} else {
-							var hasRightAxis = false;
-							axis.forEach(function(v) {
-								if(v == 'right') {
-									hasRightAxis = true;
-								}
-							})
-							if(hasRightAxis) {
-								// add space to right margin
-								margin[1] = margin[1] + 50;
-							}
-						}
-	
-						
 						var colors = getOptionalVar(dataMap, 'colors', []);
 						// default colors values
 						if(colors.length == 0) {
@@ -295,7 +272,6 @@ MOD_chart.directive('chart', function () {
 							"discrete": discrete,
 							"showLegend": showLegend,
 							"displayNames": displayNames,
-							"axis" : axis,
 							"colors": colors,
 							"scaleY" : dataMap.scaleY,
 							"scaleX" : dataMap.scaleX,
@@ -322,14 +298,6 @@ MOD_chart.directive('chart', function () {
 							.duration(transitionDuration)
 							.ease("linear")
 							.call(yAxisLeft)
-							
-							if(yAxisRight != undefined) {
-								// slide y-axis to updated location
-								graph.selectAll("g .y.axis.right").transition()
-								.duration(transitionDuration)
-								.ease("linear")
-								.call(yAxisRight)
-							}
 						} else {
 							// slide x-axis to updated location
 							graph.selectAll("g .x.axis")
@@ -338,12 +306,6 @@ MOD_chart.directive('chart', function () {
 							// slide y-axis to updated location
 							graph.selectAll("g .y.axis.left")
 							.call(yAxisLeft)
-	
-							if(yAxisRight != undefined) {			
-								// slide y-axis to updated location
-								graph.selectAll("g .y.axis.right")
-								.call(yAxisRight)
-							}
 						}
 					}
 					
@@ -397,11 +359,6 @@ MOD_chart.directive('chart', function () {
 					 *  - it will properly determine what scale is being used based on last user choice (via public switchScale methods)
 					 */
 					var initY = function() {
-						initYleft();
-						initYright();
-					}
-					
-					var initYleft = function() {
 						var maxYscaleLeft = calculateMaxY(data, 'left')
 						var numAxisLabels = 4;
 						if(yScale == SCALE_POWER) {
@@ -419,27 +376,6 @@ MOD_chart.directive('chart', function () {
 						yAxisLeft = d3.svg.axis().scale(yLeft).ticks(numAxisLabels, tickFormatForLogScale).orient("left").tickSize(-w,0,0);
 					}
 					
-					var initYright = function() {
-						var maxYscaleRight = calculateMaxY(data, 'right')
-						// only create the right axis if it has values
-						if(maxYscaleRight != undefined) {
-							var numAxisLabels = 6;
-							if(yScale == SCALE_POWER) {
-								yRight = d3.scale.pow().exponent(0.3).domain([0, maxYscaleRight]).range([h, 0]).nice();		
-								numAxisLabels = data.numAxisLabelsPowerScale;
-							} else if(yScale == SCALE_LOG) {
-								// we can't have 0 so will represent 0 with a very small number
-								// 0.1 works to represent 0, 0.01 breaks the tickFormatter
-								yRight = d3.scale.log().domain([0.1, maxYscaleRight]).range([h, 0]).nice();	
-							} else if(yScale == SCALE_LINEAR) {
-								yRight = d3.scale.linear().domain([0, maxYscaleRight]).range([h, 0]).nice();
-								numAxisLabels = data.numAxisLabelsLinearScale;
-							}
-							
-							yAxisRight = d3.svg.axis().scale(yRight).ticks(numAxisLabels, tickFormatForLogScale).orient("right");
-						}
-					}
-									
 					/**
 					 * Allow re-initializing the x function at any time.
 					 */
@@ -486,9 +422,9 @@ MOD_chart.directive('chart', function () {
 								.attr("width", w + margin[1] + margin[3])
 								.attr("height", h + margin[0] + margin[2])	
 								.append("svg:g")
-									.attr("transform", "translate(" + margin[3] + "," + margin[0] + ")");
-	
-						initX();		
+								.attr("transform", "translate(" + margin[3] + "," + margin[0] + ")");
+						
+						initX();
 						
 						// Add the x-axis.
 						graph.append("svg:g")
@@ -505,33 +441,14 @@ MOD_chart.directive('chart', function () {
 							.attr("class", "y axis left")
 							.attr("transform", "translate(0,0)")
 							.call(yAxisLeft);
-							
-						if(yAxisRight != undefined) {
-							// Add the y-axis to the right if we need one
-							graph.append("svg:g")
-								.attr("class", "y axis right")
-								.attr("transform", "translate(" + (w+10) + ",0)")
-								.call(yAxisRight);
-						}
 						
 						// create line function used to plot our data
 						lineFunction = d3.svg.line()
 							.x(function(d,i) { 
-								var _x = x(d[0]);
-								return _x;
-								})
+								return x(d[0]);
+							})
 							.y(function(d, i) {
-								if(i == 0) {
-									lineFunctionSeriesIndex++;
-								}
-								var axis = data.axis[lineFunctionSeriesIndex];
-								var _y;
-								if(axis == 'right') {
-									_y = yRight(d[1]); 
-								} else {
-									_y = yLeft(d[1]); 
-								}
-								return _y;
+								return yLeft(d[1]);
 							});
 							
 							
