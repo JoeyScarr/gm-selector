@@ -106,9 +106,19 @@ describe('Util module', function(){
 	
 	describe('sample', function() {
 		it('should return a list of the given size', inject(function(util) {
-			expect(util.sample(0).length).toEqual(0);
-			expect(util.sample(1).length).toEqual(1);
-			expect(util.sample(53).length).toEqual(53);
+			expect(util.sample(0, 0).length).toEqual(0);
+			expect(util.sample(10, 0).length).toEqual(0);
+			expect(util.sample(10, 1).length).toEqual(1);
+			expect(util.sample(53, 53).length).toEqual(53);
+			expect(util.sample(100, 53).length).toEqual(53);
+		}));
+		it('should return all items when k > n', inject(function(util) {
+			expect(util.sample(0, 0).length).toEqual(0);
+			expect(util.sample(0, 10).length).toEqual(0);
+			expect(util.sample(1, 10)).toEqual([0]);
+			expect(util.sample(2, 10).length).toEqual(2);
+			expect(util.sample(6, 10).length).toEqual(6);
+			expect(util.sample(53, 100).length).toEqual(53);
 		}));
 	});
 	

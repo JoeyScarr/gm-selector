@@ -92,12 +92,13 @@ MOD_util.factory('util', function() {
 		},
 		binary_search: binary_search,
 		interp_array: interp_array,
-		sample: function (size) {
-			var arr = new Array(size);
-			for (var j = 0; j < size; j++) {
+		sample: function (n, k) {
+			k = Math.min(n, k);
+			var arr = new Array(n);
+			for (var j = 0; j < n; j++) {
 				arr[j] = j;
 			}
-			var shuffled = arr.slice(0), i = arr.length, min = i - size, temp, index;
+			var shuffled = arr.slice(0), i = arr.length, min = i - k, temp, index;
 			while (i-- > min) {
 				index = Math.floor(i * Math.random());
 				temp = shuffled[index];
