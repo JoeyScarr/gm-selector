@@ -4,6 +4,7 @@
 
 describe('Selection module', function(){
 	beforeEach(module('selection'));
+	beforeEach(module('util'));
 	beforeEach(module('NGAdatabase'));
 	beforeEach(module('OpenSHAresults'));
 	beforeEach(inject(function(database, NGAdatabase) {
@@ -172,7 +173,7 @@ describe('Selection module', function(){
 	});
 	
 	describe('selectBestFittingGroundMotions', function() {
-		it('should return the best fitting ground motions', inject(function(gmSelector, database, OpenSHAresults) {
+		it('should return the best fitting ground motions for the given sample of simulated motions', inject(function(gmSelector, database, OpenSHAresults) {
 			var sampleIndices = [23,91,30,7,41,20,98,90,24,54,84,14,49,50,26,29,93,38,25,1,87,86,28,96,67,94,52,48,71,68];
 			database.loadDatabase('NGAdatabase', function(data) {
 				gmSelector.scaleGroundMotions(data, 0.5715106, 'PGA');
@@ -184,6 +185,98 @@ describe('Selection module', function(){
 				expect(result[1].residual).toBeCloseTo(0.756737, 6);
 				expect(result[29].index).toEqual(428);
 				expect(result[29].residual).toBeCloseTo(0.626665, 6);
+			});
+		}));
+	});
+	
+	describe('selectGroundMotions', function() {
+		it('should return the correct output', inject(function(gmSelector, database, OpenSHAresults, util) {
+			database.loadDatabase('NGAdatabase', function(data) {
+				spyOn(util, 'sample').andCallFake(function(name, callback) {
+					return [23,91,30,7,41,20,98,90,24,54,84,14,49,50,26,29,93,38,25,1,87,86,28,96,67,94,52,48,71,68];
+				});
+				var output = gmSelector.selectGroundMotions(OpenSHAresults, data, function(){});
+				// Expect one call to util.sample
+				expect(util.sample.calls.length).toEqual(1);
+				// Make sure the global residual, R is correct
+				expect(output.R).toBeCloseTo(0.035666, 6);
+				// Make sure the Kolmogorov-Smirnov critical value is correct
+				expect(output.ksCriticalValue).toBeCloseTo(0.217615, 6);
+				// Make sure the KS statistics are correct for each IM
+				expect(output.IMi[0].ksDiff).toBeCloseTo(0.146925, 6);
+				expect(output.IMi[1].ksDiff).toBeCloseTo(0.177292, 6);
+				expect(output.IMi[2].ksDiff).toBeCloseTo(0.088426, 6);
+				expect(output.IMi[3].ksDiff).toBeCloseTo(0.224296, 6);
+				expect(output.IMi[4].ksDiff).toBeCloseTo(0.154380, 6);
+				expect(output.IMi[5].ksDiff).toBeCloseTo(0.219265, 6);
+				expect(output.IMi[6].ksDiff).toBeCloseTo(0.080936, 6);
+				expect(output.IMi[7].ksDiff).toBeCloseTo(0.278676, 6);
+				expect(output.IMi[8].ksDiff).toBeCloseTo(0.169969, 6);
+				expect(output.IMi[9].ksDiff).toBeCloseTo(0.174985, 6);
+				expect(output.IMi[10].ksDiff).toBeCloseTo(0.082285, 6);
+				expect(output.IMi[11].ksDiff).toBeCloseTo(0.277502, 6);
+				// Make sure the correct GMIDs with correct scale factors are selected
+				var gm = output.selectedGroundMotions;
+				expect(gm[0].GMID).toEqual(210);
+				expect(gm[1].GMID).toEqual(541);
+				expect(gm[2].GMID).toEqual(1912);
+				expect(gm[3].GMID).toEqual(879);
+				expect(gm[4].GMID).toEqual(683);
+				expect(gm[5].GMID).toEqual(810);
+				expect(gm[6].GMID).toEqual(407);
+				expect(gm[7].GMID).toEqual(686);
+				expect(gm[8].GMID).toEqual(2495);
+				expect(gm[9].GMID).toEqual(720);
+				expect(gm[10].GMID).toEqual(305);
+				expect(gm[11].GMID).toEqual(1073);
+				expect(gm[12].GMID).toEqual(1641);
+				expect(gm[13].GMID).toEqual(1087);
+				expect(gm[14].GMID).toEqual(585);
+				expect(gm[15].GMID).toEqual(407);
+				expect(gm[16].GMID).toEqual(983);
+				expect(gm[17].GMID).toEqual(410);
+				expect(gm[18].GMID).toEqual(700);
+				expect(gm[19].GMID).toEqual(148);
+				expect(gm[20].GMID).toEqual(2382);
+				expect(gm[21].GMID).toEqual(514);
+				expect(gm[22].GMID).toEqual(585);
+				expect(gm[23].GMID).toEqual(496);
+				expect(gm[24].GMID).toEqual(108);
+				expect(gm[25].GMID).toEqual(2391);
+				expect(gm[26].GMID).toEqual(514);
+				expect(gm[27].GMID).toEqual(763);
+				expect(gm[28].GMID).toEqual(265);
+				expect(gm[29].GMID).toEqual(560);
+				expect(gm[0].scaleFactor).toBeCloseTo(8.888190, 6);
+				expect(gm[1].scaleFactor).toBeCloseTo(6.763439, 6);
+				expect(gm[2].scaleFactor).toBeCloseTo(24.423530, 6);
+				expect(gm[3].scaleFactor).toBeCloseTo(0.792224, 6);
+				expect(gm[4].scaleFactor).toBeCloseTo(2.179674, 6);
+				expect(gm[5].scaleFactor).toBeCloseTo(1.251118, 6);
+				expect(gm[6].scaleFactor).toBeCloseTo(0.789270, 6);
+				expect(gm[7].scaleFactor).toBeCloseTo(10.316076, 6);
+				expect(gm[8].scaleFactor).toBeCloseTo(1.710086, 6);
+				expect(gm[9].scaleFactor).toBeCloseTo(2.691995, 6);
+				expect(gm[10].scaleFactor).toBeCloseTo(6.952684, 6);
+				expect(gm[11].scaleFactor).toBeCloseTo(5.867665, 6);
+				expect(gm[12].scaleFactor).toBeCloseTo(1.744538, 6);
+				expect(gm[13].scaleFactor).toBeCloseTo(0.343973, 6);
+				expect(gm[14].scaleFactor).toBeCloseTo(0.450115, 6);
+				expect(gm[15].scaleFactor).toBeCloseTo(0.789270, 6);
+				expect(gm[16].scaleFactor).toBeCloseTo(0.747170, 6);
+				expect(gm[17].scaleFactor).toBeCloseTo(1.883687, 6);
+				expect(gm[18].scaleFactor).toBeCloseTo(0.959071, 6);
+				expect(gm[19].scaleFactor).toBeCloseTo(2.170568, 6);
+				expect(gm[20].scaleFactor).toBeCloseTo(3.767374, 6);
+				expect(gm[21].scaleFactor).toBeCloseTo(2.576693, 6);
+				expect(gm[22].scaleFactor).toBeCloseTo(0.450115, 6);
+				expect(gm[23].scaleFactor).toBeCloseTo(1.484829, 6);
+				expect(gm[24].scaleFactor).toBeCloseTo(16.613680, 6);
+				expect(gm[25].scaleFactor).toBeCloseTo(1.727662, 6);
+				expect(gm[26].scaleFactor).toBeCloseTo(2.576693, 6);
+				expect(gm[27].scaleFactor).toBeCloseTo(1.710597, 6);
+				expect(gm[28].scaleFactor).toBeCloseTo(0.998795, 6);
+				expect(gm[29].scaleFactor).toBeCloseTo(13.048187, 6);
 			});
 		}));
 	});
