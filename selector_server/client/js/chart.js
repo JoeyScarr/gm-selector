@@ -925,7 +925,6 @@ MOD_chart.directive('chart', function () {
 						// position label values
 						graph.selectAll("text.legend.value")
 						.attr("x", function(d, i) {
-							//return labelNameEnd[i];
 							return $("#" + containerId).width()-230;	
 						});
 					}
