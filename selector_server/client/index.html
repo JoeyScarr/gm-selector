@@ -53,7 +53,7 @@
 					</select>
 				</p>
 				<div ng-repeat="chart in chartData" ng-show="chart.name == visibleChart">
-					<chart id="'chart' + $index" data="chart" scale="chart.name == 'SA' && 'log' || 'linear'" width="660px" height="400px"></chart>
+					<chart id="'chart' + $index" data="chart" scale="'linear'" xscale="'log'" yscale="chart.name == 'SA' && 'log' || 'linear'" width="660px" height="400px"></chart>
 				</div>
 			</div>
 			<div class="output panel">

@@ -16,7 +16,9 @@ MOD_chart.directive('chart', function () {
 		scope: {
 			data: '=',
 			id: '=',
-			scale: '='
+			scale: '=',
+			xscale: '=',
+			yscale: '='
 		},
 		compile: function compile(element, attrs) {
 			
@@ -28,7 +30,8 @@ MOD_chart.directive('chart', function () {
 			return function link(scope, element, attrs) {
 				element[0].id = scope.id;
 				var id = scope.id;
-				var scale = scope.scale || SCALE_LOG;
+				var scaleX = scope.xscale || scope.scale || SCALE_LOG;
+				var scaleY = scope.yscale || scope.scale || SCALE_LOG;
 				scope.$watch('data', function (newVal, oldVal) {
 					$('#' + id).empty();
 					
@@ -105,7 +108,8 @@ MOD_chart.directive('chart', function () {
 								discrete: discrete,
 								showLegend: showLegend,
 								colors: colors,
-								scale: scale,
+								scaleX: scaleX,
+								scaleY: scaleY,
 								xAxisLabel: newVal.xAxisLabel,
 								yAxisLabel: newVal.yAxisLabel
 							}
@@ -209,8 +213,8 @@ MOD_chart.directive('chart', function () {
 						data = processDataMap(getRequiredVar(argsMap, 'data'));
 						
 						/* set the default scale */
-						yScale = data.scale;
-						xScale = data.scale;
+						yScale = data.scaleY;
+						xScale = data.scaleX;
 						
 						/* set the x and y axis labels */
 						xAxisLabel = data.xAxisLabel;
@@ -245,9 +249,6 @@ MOD_chart.directive('chart', function () {
 						// assign data values to plot over time
 						var dataValues = getRequiredVar(dataMap, 'values', "The data object must contain a 'values' value with a data array.");
 						var extraPoints = getRequiredVar(dataMap, 'extraPoints', "The data object must contain an 'extraPoints' value with a data array.");
-						//var startTime = new Date(getRequiredVar(dataMap, 'start', "The data object must contain a 'start' value with the start time in milliseconds since epoch."))
-						//var endTime = new Date(getRequiredVar(dataMap, 'end', "The data object must contain an 'end' value with the end time in milliseconds since epoch."))
-						//var step = getRequiredVar(dataMap, 'step', "The data object must contain a 'step' value with the time in milliseconds between each data value.")		
 						var names = getRequiredVar(dataMap, 'names', "The data object must contain a 'names' array with the same length as 'values' with a name for each data value array.");
 						var discrete = getRequiredVar(dataMap, 'discrete', "The data object must contain a 'discrete' array with the same length as 'values' stating whether each array is a discrete line.");
 						var showLegend = getRequiredVar(dataMap, 'showLegend', "The data object must contain a 'showLegend' array with the same length as 'values' stating whether each line should have a legend entry.");
@@ -296,12 +297,13 @@ MOD_chart.directive('chart', function () {
 							"displayNames": displayNames,
 							"axis" : axis,
 							"colors": colors,
-							"scale" : getOptionalVar(dataMap, 'scale', yScale),
+							"scaleY" : dataMap.scaleY,
+							"scaleX" : dataMap.scaleX,
 							"xAxisLabel": xAxisLabel,
 							"yAxisLabel": yAxisLabel,
 							"numAxisLabelsLinearScale": numAxisLabelsLinearScale,
 							"numAxisLabelsPowerScale": numAxisLabelsPowerScale
-						}
+						};
 					}
 					
 					var redrawAxes = function(withTransition) {
