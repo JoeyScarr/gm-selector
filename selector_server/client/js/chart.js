@@ -94,7 +94,9 @@ MOD_chart.directive('chart', ['util', function (util) {
 							scaleX: scaleX,
 							scaleY: scaleY,
 							xAxisLabel: newVal.xAxisLabel,
-							yAxisLabel: newVal.yAxisLabel
+							yAxisLabel: newVal.yAxisLabel,
+							showXAxisScaleButtons: newVal.showXAxisScaleButtons,
+							showYAxisScaleButtons: newVal.showYAxisScaleButtons
 						};
 						LineGraph(argsMap);
 					}
@@ -162,6 +164,8 @@ MOD_chart.directive('chart', ['util', function (util) {
 					var numAxisLabelsLinearScale = util.defaultFor(argsMap.numAxisLabelsLinearScale, 6);
 					var numAxisLabelsLogScale = util.defaultFor(argsMap.numAxisLabelsLogScale, 5);
 					var numAxisLabelsPowerScale = util.defaultFor(argsMap.numAxisLabelsPowerScale, 6);
+					var showXAxisScaleButtons = util.defaultFor(argsMap.showXAxisScaleButtons, true);
+					var showYAxisScaleButtons = util.defaultFor(argsMap.showYAxisScaleButtons, true);
 					
 					// Data
 					var lines = argsMap.lines;
@@ -297,7 +301,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 						} else if(yScale == SCALE_LOG) {
 							// we can't have 0 so will represent 0 with a very small number
 							// 0.1 works to represent 0, 0.01 breaks the tickFormatter
-							yLeft = d3.scale.log().domain([calculateMinY(), maxYscaleLeft]).range([h, 0]).nice();	
+							yLeft = d3.scale.log().domain([Math.max(calculateMinY(),0.00001), maxYscaleLeft]).range([h, 0]).nice();	
 							numAxisLabels = numAxisLabelsLogScale;
 						} else if(yScale == SCALE_LINEAR) {
 							yLeft = d3.scale.linear().domain([0, maxYscaleLeft]).range([h, 0]).nice();
@@ -524,7 +528,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 						hoverLine.classed("hide", true);
 						
 						createXScaleButtons();
-						createScaleButtons();
+						createYScaleButtons();
 						createDateLabel();
 						createLegend();
 						createXAxisLabel();
@@ -604,52 +608,54 @@ MOD_chart.directive('chart', ['util', function (util) {
 					 * Create scale buttons for switching the x-axis
 					 */
 					var createXScaleButtons = function() {
-						var cumulativeWidth = $("#" + containerId).width()-230;
-						// Create the label
-						var label = graph.append("svg:text")
-							.attr("font-size", "12")
-							.attr("font-weight", "bold")
-							.text("X-axis Scale:")
-							.attr("y", h+28)
-							.attr("x", cumulativeWidth);
-						cumulativeWidth += 80;
-						// Create the buttons
-						var buttonGroup = graph.append("svg:g")
-							.attr("class", "x-scale-button-group")
-							.selectAll("g")
-							.data(scales)
-							.enter()
-							.append("svg:text")
-								.attr("class", "x-scale-button")
-								.text(function(d, i) {
-									return d[1];
-								})
-								.attr("font-size", "12") // this must be before "x" which dynamically determines width
-								.attr("fill", function(d) {
-									if(d[0] == xScale) {
-										return "black";
-									} else {
-										return "blue";
-									}
-								})
-								.classed("selected", function(d) {
-									if(d[0] == xScale) {
-										return true;
-									} else {
-										return false;
-									}
-								})
-								.attr("x", function(d, i) {
-									// return it at the width of previous labels (where the last one ends)
-									var returnX = cumulativeWidth;
-									// increment cumulative to include this one
-									cumulativeWidth += 40;
-									return returnX;
-								})
+						if (showXAxisScaleButtons) {
+							var cumulativeWidth = $("#" + containerId).width()-230;
+							// Create the label
+							var label = graph.append("svg:text")
+								.attr("font-size", "12")
+								.attr("font-weight", "bold")
+								.text("X-axis Scale:")
 								.attr("y", h+28)
-								.on('click', function(d, i) {
-									handleMouseClickXScaleButton(this, d, i);
-								});
+								.attr("x", cumulativeWidth);
+							cumulativeWidth += 80;
+							// Create the buttons
+							var buttonGroup = graph.append("svg:g")
+								.attr("class", "x-scale-button-group")
+								.selectAll("g")
+								.data(scales)
+								.enter()
+								.append("svg:text")
+									.attr("class", "x-scale-button")
+									.text(function(d, i) {
+										return d[1];
+									})
+									.attr("font-size", "12") // this must be before "x" which dynamically determines width
+									.attr("fill", function(d) {
+										if(d[0] == xScale) {
+											return "black";
+										} else {
+											return "blue";
+										}
+									})
+									.classed("selected", function(d) {
+										if(d[0] == xScale) {
+											return true;
+										} else {
+											return false;
+										}
+									})
+									.attr("x", function(d, i) {
+										// return it at the width of previous labels (where the last one ends)
+										var returnX = cumulativeWidth;
+										// increment cumulative to include this one
+										cumulativeWidth += 40;
+										return returnX;
+									})
+									.attr("y", h+28)
+									.on('click', function(d, i) {
+										handleMouseClickXScaleButton(this, d, i);
+									});
+						}
 					}
 	
 					var handleMouseClickXScaleButton = function(button, buttonData, index) {
@@ -681,52 +687,54 @@ MOD_chart.directive('chart', ['util', function (util) {
 					/**
 					 * Create scale buttons for switching the y-axis
 					 */
-					var createScaleButtons = function() {
-						var cumulativeWidth = 80;
-						// Create the label
-						var label = graph.append("svg:text")
-							.attr("font-size", "12")
-							.attr("font-weight", "bold")
-							.text("Y-axis Scale:")
-							.attr("y", -4)
-							.attr("x", 0);
-						// Create the buttons
-						var buttonGroup = graph.append("svg:g")
-							.attr("class", "scale-button-group")
-							.selectAll("g")
-							.data(scales)
-							.enter()
-							.append("svg:text")
-								.attr("class", "scale-button")
-								.text(function(d, i) {
-									return d[1];
-								})
-								.attr("font-size", "12") // this must be before "x" which dynamically determines width
-								.attr("fill", function(d) {
-									if(d[0] == yScale) {
-										return "black";
-									} else {
-										return "blue";
-									}
-								})
-								.classed("selected", function(d) {
-									if(d[0] == yScale) {
-										return true;
-									} else {
-										return false;
-									}
-								})
-								.attr("x", function(d, i) {
-									// return it at the width of previous labels (where the last one ends)
-									var returnX = cumulativeWidth;
-									// increment cumulative to include this one
-									cumulativeWidth += 40;
-									return returnX;
-								})
+					var createYScaleButtons = function() {
+						if (showYAxisScaleButtons) {
+							var cumulativeWidth = 80;
+							// Create the label
+							var label = graph.append("svg:text")
+								.attr("font-size", "12")
+								.attr("font-weight", "bold")
+								.text("Y-axis Scale:")
 								.attr("y", -4)
-								.on('click', function(d, i) {
-									handleMouseClickScaleButton(this, d, i);
-								});
+								.attr("x", 0);
+							// Create the buttons
+							var buttonGroup = graph.append("svg:g")
+								.attr("class", "scale-button-group")
+								.selectAll("g")
+								.data(scales)
+								.enter()
+								.append("svg:text")
+									.attr("class", "scale-button")
+									.text(function(d, i) {
+										return d[1];
+									})
+									.attr("font-size", "12") // this must be before "x" which dynamically determines width
+									.attr("fill", function(d) {
+										if(d[0] == yScale) {
+											return "black";
+										} else {
+											return "blue";
+										}
+									})
+									.classed("selected", function(d) {
+										if(d[0] == yScale) {
+											return true;
+										} else {
+											return false;
+										}
+									})
+									.attr("x", function(d, i) {
+										// return it at the width of previous labels (where the last one ends)
+										var returnX = cumulativeWidth;
+										// increment cumulative to include this one
+										cumulativeWidth += 40;
+										return returnX;
+									})
+									.attr("y", -4)
+									.on('click', function(d, i) {
+										handleMouseClickScaleButton(this, d, i);
+									});
+						}
 					};
 	
 					var handleMouseClickScaleButton = function(button, buttonData, index) {

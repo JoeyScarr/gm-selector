@@ -169,6 +169,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 				name: IMi.name,
 				xAxisLabel: IMi.name,
 				yAxisLabel: 'Cumulative Probability, CDF',
+				showYAxisScaleButtons: false,
 				lines: [
 					{
 						'name': 'GCIM distribution',
