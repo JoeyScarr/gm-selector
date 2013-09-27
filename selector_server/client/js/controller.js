@@ -178,27 +178,31 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 						'name': 'GCIM distribution',
 						'isDiscrete': true,
 						'data': IMi.GCIMvalues,
-						'color': 'red'
+						'color': 'red',
+						'width': '1.5px'
 					},
 					{
 						'name': 'Realizations',
 						'isDiscrete': true,
 						'data': IMi.realizationCDF,
-						'color': 'blue'
+						'color': 'blue',
+						'width': '1.5px'
 					},
 					{
 						'name': 'Upper KS bound (\u03b1 = ' + $scope.alpha + ')',
 						'isDiscrete': true,
 						'data': upperKSbound,
 						'color': 'red',
-						'dasharray': '5,5'
+						'dasharray': '10,10',
+						'width': '1.5px'
 					},
 					{
 						'name': 'Lower KS bound (\u03b1 = ' + $scope.alpha + ')',
 						'isDiscrete': true,
 						'data': lowerKSbound,
 						'color': 'red',
-						'dasharray': '5,5'
+						'dasharray': '10,10',
+						'width': '1.5px'
 					}
 				]
 			}
