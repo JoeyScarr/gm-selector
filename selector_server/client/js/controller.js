@@ -172,6 +172,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 				showYAxisScaleButtons: false,
 				xScale: 'log',
 				yScale: 'linear',
+				legendPosition: 'bottom',
 				lines: [
 					{
 						'name': 'GCIM distribution',

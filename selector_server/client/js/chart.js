@@ -11,6 +11,8 @@ MOD_chart.directive('chart', ['util', function (util) {
 	var SCALE_LINEAR = 'linear';
 	var SCALE_LOG = 'log';
 	var SCALE_POWER = 'pow';
+	var LEGEND_TOP = 'top';
+	var LEGEND_BOTTOM = 'bottom';
 
 	return {
 		restrict: 'E',
@@ -95,6 +97,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 							}
 						}
 						
+						var legendPosition = newVal.legendPosition || LEGEND_TOP;
 						var scaleX = newVal.xScale || newVal.scale || SCALE_LINEAR;
 						var scaleY = newVal.yScale || newVal.scale || SCALE_LINEAR;
 						
@@ -109,6 +112,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 							lines: lines,
 							linePoints: linePoints,
 							extraPoints: extraPoints,
+							legendPosition: legendPosition,
 							scaleX: scaleX,
 							scaleY: scaleY,
 							xAxisLabel: newVal.xAxisLabel,
@@ -175,6 +179,9 @@ MOD_chart.directive('chart', ['util', function (util) {
 					// Default scales
 					var yScale = argsMap.scaleY;
 					var xScale = argsMap.scaleX;
+					
+					// Legend positioning
+					var legendPosition = argsMap.legendPosition;
 					
 					// Axis labels
 					var xAxisLabel = util.defaultFor(argsMap.xAxisLabel, 'X Axis');
@@ -549,6 +556,17 @@ MOD_chart.directive('chart', ['util', function (util) {
 					};
 					
 					/**
+					 * Calculates the Y position of the legend entry with the given index.
+					 */
+					var getLegendEntryY = function(i) {
+						if (legendPosition == LEGEND_BOTTOM) {
+							return h + marginTop - (legendEntries.length - i) * 20 - 20;
+						} else { // LEGEND_TOP
+							return 20+i*20;
+						}
+					}
+					
+					/**
 					 * Create a legend that displays the name of each line with appropriate color coding
 					 * and allows for showing the current value when doing a mouseOver
 					 */
@@ -574,7 +592,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 									return d.color;
 								})
 								.attr("y", function(d, i) {
-									return 20+i*20;
+									return getLegendEntryY(i);
 								})
 	
 								
@@ -586,7 +604,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 									return d.color;
 								})
 								.attr("y", function(d, i) {
-									return 20+i*20;
+									return getLegendEntryY(i);
 								})		
 						
 						var cumulativeWidth = 0;
