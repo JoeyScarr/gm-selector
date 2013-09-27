@@ -4,7 +4,7 @@
 var MOD_chart = angular.module('chart', []);
 
 // Create a directive for building charts.
-MOD_chart.directive('chart', function () {
+MOD_chart.directive('chart', ['util', function (util) {
 	// Constants
 	var SCALE_LINEAR = 'linear';
 	var SCALE_LOG = 'log';
@@ -28,50 +28,38 @@ MOD_chart.directive('chart', function () {
 			element.replaceWith(htmlText);
 			
 			return function link(scope, element, attrs) {
+				var id = scope.id || 'mychart';
 				element[0].id = scope.id;
-				var id = scope.id;
 				var scaleX = scope.xscale || scope.scale || SCALE_LOG;
 				var scaleY = scope.yscale || scope.scale || SCALE_LOG;
 				scope.$watch('data', function (newVal, oldVal) {
 					$('#' + id).empty();
 					
-					if (!!newVal && !!newVal.lines && newVal.lines.length > 0){
-						var discrete = $.map(newVal.lines, function(val, i) {
-							return !!val.drawCircles;
-						});
-						var showLegend = $.map(newVal.lines, function(val, i) {
-							return val.showLegend == null ? true : val.showLegend;
-						});
-						var values = $.map(newVal.lines, function(val, i) {
-							if (val.isDiscrete) {
-								return [val.data];
-							} else {
-								var x_lowerlimit = val.limits.xmin;
-								var x_upperlimit = val.limits.xmax;
+					if (!!newVal && !!newVal.lines && newVal.lines.length > 0) {
+						var lines = newVal.lines;
+						var extraPoints = newVal.extraPoints;
+						
+						// Convert function-based lines into discrete lines.
+						for (var i = 0; i < lines.length; ++i) {
+							var line = lines[i];
+							if (!line.isDiscrete) {
+								var x_lowerlimit = line.limits.xmin;
+								var x_upperlimit = line.limits.xmax;
 								var points = d3.range(x_lowerlimit, x_upperlimit, (x_upperlimit - x_lowerlimit)/500.0)
 									.map(function(x) {
 										return [x, val.func(x)];
 									});
-								return [points];
+								line.data = points;
 							}
-						});
-						var extraPoints = $.map(newVal.lines, function(val, i) {
-							return [val.extraPoints];
-						});
-						var names = $.map(newVal.lines, function(val, i) {
-							return [val.name];
-						});
-						var colors = $.map(newVal.lines, function(val, i) {
-							return [val.color];
-						});
+						}
 						
 						// Calculate limits.
 						var xmin = Number.MAX_VALUE;
 						var xmax = -Number.MAX_VALUE;
 						var ymin = Number.MAX_VALUE;
 						var ymax = -Number.MAX_VALUE;
-						for (var i = 0; i < newVal.lines.length; ++i) {
-							var line = newVal.lines[i];
+						for (var i = 0; i < lines.length; ++i) {
+							var line = lines[i];
 							if (line.isDiscrete) {
 								// Assume for simplicity that the function is monotonic.
 								// Check the first point in the data set.
@@ -95,24 +83,18 @@ MOD_chart.directive('chart', function () {
 						
 						var argsMap = {
 							containerId: id,
-							data: {
-								limits: {
-									xmin: xmin,
-									xmax: xmax,
-									ymin: ymin,
-									ymax: ymax
-								},
-								names: names,
-								values: values,
-								extraPoints: extraPoints,
-								discrete: discrete,
-								showLegend: showLegend,
-								colors: colors,
-								scaleX: scaleX,
-								scaleY: scaleY,
-								xAxisLabel: newVal.xAxisLabel,
-								yAxisLabel: newVal.yAxisLabel
-							}
+							limits: {
+								xmin: xmin,
+								xmax: xmax,
+								ymin: ymin,
+								ymax: ymax
+							},
+							lines: lines,
+							extraPoints: extraPoints,
+							scaleX: scaleX,
+							scaleY: scaleY,
+							xAxisLabel: newVal.xAxisLabel,
+							yAxisLabel: newVal.yAxisLabel
 						};
 						LineGraph(argsMap);
 					}
@@ -158,35 +140,54 @@ MOD_chart.directive('chart', function () {
 					/* private variables */
 					/* *************************************************************** */
 					// the div we insert the graph into
-					var containerId;
-					var container;
+					var containerId = argsMap.containerId;
+					var container = document.querySelector('#' + containerId);
 					
 					// functions we use to display and interact with the graphs and lines
-					var graph, x, yLeft, xAxis, yAxisLeft, yAxisLeftDomainStart, linesGroup, linesGroupDiscrete, extraPointsGroup, linesGroupText, lines, lineFunction, lineFunctionSeriesIndex = -1;
+					var graph, x, yLeft, xAxis, yAxisLeft, yAxisLeftDomainStart;
+					
+					// SVG elements
+					var svgLinesGroup, svgLinesGroupDiscrete, svgExtraPoints, svgExtraPointsGroup, svgLinesGroupText, svgLines;
+					
+					var lineFunction, lineFunctionSeriesIndex = -1;
 					
 					var scales = [[SCALE_LINEAR,'Linear'], [SCALE_LOG,'Log']];
 					// Default scales
-					var yScale = SCALE_LOG; // can be pow, log, linear
-					var xScale = SCALE_LOG; // can be pow, log, linear
+					var yScale = util.defaultFor(argsMap.scaleY, SCALE_LOG); // can be pow, log, linear
+					var xScale = util.defaultFor(argsMap.scaleX, SCALE_LOG); // can be pow, log, linear
 					
 					// Axis labels
-					var xAxisLabel = '';
-					var yAxisLabel = '';
+					var xAxisLabel = util.defaultFor(argsMap.xAxisLabel, 'X Axis');
+					var yAxisLabel = util.defaultFor(argsMap.yAxisLabel, 'Y Axis');
+					var numAxisLabelsLinearScale = util.defaultFor(argsMap.numAxisLabelsLinearScale, 6);
+					var numAxisLabelsLogScale = util.defaultFor(argsMap.numAxisLabelsLogScale, 5);
+					var numAxisLabelsPowerScale = util.defaultFor(argsMap.numAxisLabelsPowerScale, 6);
+					
+					// Data
+					var lines = argsMap.lines;
+					var extraPoints = util.defaultFor(argsMap.extraPoints, []);
+					// Set up legend entries for those lines that display them.
+					var legendEntries = $.map(lines, function(val, i) {
+						if (val.showLegend == null || val.showLegend) {
+							return {
+								name: val.name || "Line " + (i + 1),
+								color: val.color || "red"
+							};
+						} else {
+							return null;
+						}
+					});
 					
 					var hoverContainer, hoverLine, hoverLineXOffset, hoverLineYOffset, hoverLineGroup;
 					var legendFontSize = 12; // we can resize dynamically to make fit so we remember it here
-	
-					// instance storage of data to be displayed
-					var data;
-						
+					
 					// define dimensions of graph
 					var marginTop = 15, marginRight = 20, marginBottom = 35, marginLeft = 70;
 					var w, h;	 // width & height
 					
 					var transitionDuration = 300;
 					
-					var formatNumber = d3.format(",.1e");
-					var tickFormatForLogScale = function(d) { return formatNumber(d) };
+					var tickFormatForLogScale = function(d) { return d3.format(",.1e")(d) };
 					
 					// used to track if the user is interacting via mouse/finger instead of trying to determine
 					// by analyzing various element class names to see if they are visible or not
@@ -194,25 +195,9 @@ MOD_chart.directive('chart', function () {
 					var currentUserPositionX = -1;
 						
 					/* *************************************************************** */
-					/* initialization and validation */
+					/* initialization */
 					/* *************************************************************** */
 					var _init = function() {
-						// required variables that we'll throw an error on if we don't find
-						containerId = getRequiredVar(argsMap, 'containerId');
-						container = document.querySelector('#' + containerId);
-						
-						// assign instance vars from dataMap
-						data = processDataMap(getRequiredVar(argsMap, 'data'));
-						
-						/* set the default scale */
-						yScale = data.scaleY;
-						xScale = data.scaleX;
-						
-						/* set the x and y axis labels */
-						xAxisLabel = data.xAxisLabel;
-						yAxisLabel = data.yAxisLabel;
-	
-						// do this after processing margins and executing processDataMap above
 						initDimensions();
 						
 						createGraph();
@@ -225,56 +210,11 @@ MOD_chart.directive('chart', function () {
 								clearTimeout(TO);
 							TO = setTimeout(handleWindowResizeEvent, 200); // time in miliseconds
 						});
-					}
+					};
 					
 					/* *************************************************************** */
 					/* private methods */
 					/* *************************************************************** */
-	
-					/*
-					 * Return a validated data map
-					 * 
-					 * Expects a map like this:
-					 *	 {"start": 1335035400000, "end": 1335294600000, "step": 300000, "values": [[28,22,45,65,34], [45,23,23,45,65]]}
-					 */
-					var processDataMap = function(dataMap) {
-						// assign data values to plot over time
-						var dataValues = getRequiredVar(dataMap, 'values', "The data object must contain a 'values' value with a data array.");
-						var extraPoints = getRequiredVar(dataMap, 'extraPoints', "The data object must contain an 'extraPoints' value with a data array.");
-						var names = getRequiredVar(dataMap, 'names', "The data object must contain a 'names' array with the same length as 'values' with a name for each data value array.");
-						var discrete = getRequiredVar(dataMap, 'discrete', "The data object must contain a 'discrete' array with the same length as 'values' stating whether each array is a discrete line.");
-						var showLegend = getRequiredVar(dataMap, 'showLegend', "The data object must contain a 'showLegend' array with the same length as 'values' stating whether each line should have a legend entry.");
-						var displayNames = getOptionalVar(dataMap, 'displayNames', names);
-						var xAxisLabel = getOptionalVar(dataMap, 'xAxisLabel', '');
-						var yAxisLabel = getOptionalVar(dataMap, 'yAxisLabel', '');
-						var numAxisLabelsPowerScale = getOptionalVar(dataMap, 'numAxisLabelsPowerScale', 6); 
-						var numAxisLabelsLinearScale = getOptionalVar(dataMap, 'numAxisLabelsLinearScale', 6); 
-						
-						var colors = getOptionalVar(dataMap, 'colors', []);
-						// default colors values
-						if(colors.length == 0) {
-							displayNames.forEach(function (v, i) {
-								// set the default
-								colors[i] = "black";
-							})
-						}
-	
-						return {
-							"values" : dataValues,
-							"extraPoints": extraPoints,
-							"names" : names,
-							"discrete": discrete,
-							"showLegend": showLegend,
-							"displayNames": displayNames,
-							"colors": colors,
-							"scaleY" : dataMap.scaleY,
-							"scaleX" : dataMap.scaleX,
-							"xAxisLabel": xAxisLabel,
-							"yAxisLabel": yAxisLabel,
-							"numAxisLabelsLinearScale": numAxisLabelsLinearScale,
-							"numAxisLabelsPowerScale": numAxisLabelsPowerScale
-						};
-					}
 					
 					var redrawAxes = function(withTransition) {
 						initY();
@@ -301,7 +241,7 @@ MOD_chart.directive('chart', function () {
 							graph.selectAll("g .y.axis.left")
 							.call(yAxisLeft)
 						}
-					}
+					};
 					
 					var redrawLines = function(withTransition) {
 						// redraw lines
@@ -310,7 +250,9 @@ MOD_chart.directive('chart', function () {
 							.transition()
 								.duration(transitionDuration)
 								.ease("linear")
-								.attr("d", lineFunction)
+								.attr("d", function(d, i) {
+									return lineFunction(d.data);
+								})
 								.attr("transform", null);
 								
 							graph.selectAll("g .lines .dot")
@@ -326,7 +268,9 @@ MOD_chart.directive('chart', function () {
 									.attr("transform", null);
 						} else {
 							graph.selectAll("g .lines path")
-								.attr("d", lineFunction)
+								.attr("d", function(d, i) {
+									return lineFunction(d.data);
+								})
 								.attr("transform", null);
 								
 							graph.selectAll("g .lines .dot")
@@ -338,62 +282,64 @@ MOD_chart.directive('chart', function () {
 								})
 								.attr("transform", null);
 						}
-					}
+					};
 					
 					/*
 					 * Allow re-initializing the y function at any time.
 					 *  - it will properly determine what scale is being used based on last user choice (via public switchScale methods)
 					 */
 					var initY = function() {
-						var maxYscaleLeft = calculateMaxY(data, 'left')
-						var numAxisLabels = 4;
+						var maxYscaleLeft = calculateMaxY();
+						var numAxisLabels;
 						if(yScale == SCALE_POWER) {
 							yLeft = d3.scale.pow().exponent(0.3).domain([0, maxYscaleLeft]).range([h, 0]).nice();	
-							numAxisLabels = data.numAxisLabelsPowerScale;
+							numAxisLabels = numAxisLabelsPowerScale;
 						} else if(yScale == SCALE_LOG) {
 							// we can't have 0 so will represent 0 with a very small number
 							// 0.1 works to represent 0, 0.01 breaks the tickFormatter
 							yLeft = d3.scale.log().domain([calculateMinY(), maxYscaleLeft]).range([h, 0]).nice();	
+							numAxisLabels = numAxisLabelsLogScale;
 						} else if(yScale == SCALE_LINEAR) {
 							yLeft = d3.scale.linear().domain([0, maxYscaleLeft]).range([h, 0]).nice();
-							numAxisLabels = data.numAxisLabelsLinearScale;
+							numAxisLabels = numAxisLabelsLinearScale;
 						}
 	
 						yAxisLeft = d3.svg.axis().scale(yLeft).ticks(numAxisLabels, tickFormatForLogScale).orient("left").tickSize(-w,0,0);
-					}
+					};
 					
 					/**
 					 * Allow re-initializing the x function at any time.
 					 */
 					var initX = function() {
-						var numAxisLabels = 5; //TODO:this needs to be re-usable
+						var numAxisLabels;
 						if(xScale == SCALE_POWER) {
 							x = d3.scale.pow().exponent(0.3).domain([calculateMinX(), calculateMaxX()]).range([0, w]).nice();	
-							numAxisLabels = data.numAxisLabelsPowerScale;
+							numAxisLabels = numAxisLabelsPowerScale;
 						} else if(xScale == SCALE_LOG) {
 							x = d3.scale.log().domain([calculateMinX(), calculateMaxX()]).range([0, w]);//.nice();	
+							numAxisLabels = numAxisLabelsLogScale;
 						} else if(xScale == SCALE_LINEAR) {
 							x = d3.scale.linear().domain([calculateMinX(), calculateMaxX()]).range([0, w]).nice();
-							numAxisLabels = data.numAxisLabelsLinearScale;
+							numAxisLabels = numAxisLabelsLinearScale;
 						}
 						xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(numAxisLabels, tickFormatForLogScale).tickSize(-h,0,0).tickSubdivide(0);
-					}
+					};
 	
 					/*
 					 * Whenever we add/update data we want to re-calculate if scales have changed
 					 */
-					var calculateMinX = function(data, whichAxis) {
-						return argsMap.data.limits.xmin;
-					}				
-					var calculateMaxX = function(data, whichAxis) {
-						return argsMap.data.limits.xmax;
-					}
-					var calculateMinY = function(data, whichAxis) {
-						return argsMap.data.limits.ymin;
-					}
-					var calculateMaxY = function(data, whichAxis) {
-						return argsMap.data.limits.ymax;
-					}
+					var calculateMinX = function() {
+						return argsMap.limits.xmin;
+					};
+					var calculateMaxX = function() {
+						return argsMap.limits.xmax;
+					};
+					var calculateMinY = function() {
+						return argsMap.limits.ymin;
+					};
+					var calculateMaxY = function() {
+						return argsMap.limits.ymax;
+					};
 					
 					/**
 					* Creates the SVG elements and displays the line graph.
@@ -436,15 +382,14 @@ MOD_chart.directive('chart', function () {
 							.y(function(d, i) {
 								return yLeft(d[1]);
 							});
-							
-							
+						
 						// add a group of points to display extra point data
-						var extraPoints = graph.append("svg:g")
+						svgExtraPoints = graph.append("svg:g")
 							.attr("class", "lines")
 							.selectAll(".dot")
-							.data(data.extraPoints) // bind the array of arrays
-							
-						extraPointsGroup = extraPoints.enter().append("g")
+							.data(extraPoints) // bind the array of arrays
+						
+						svgExtraPointsGroup = svgExtraPoints.enter().append("g")
 							.filter(function(d, i) {
 								return !!data.extraPoints[i];
 							})
@@ -454,7 +399,7 @@ MOD_chart.directive('chart', function () {
 						
 						// add the extra data points
 						lineFunctionSeriesIndex = -1;
-						extraPointsGroup.selectAll(".dot")
+						svgExtraPointsGroup.selectAll(".dot")
 							.data(function(d, i) {
 								return d;
 							})
@@ -472,14 +417,14 @@ MOD_chart.directive('chart', function () {
 								if (i == 0) {
 									lineFunctionSeriesIndex++;
 								}
-								return "gray";//data.colors[lineFunctionSeriesIndex];
+								return d.color || "gray";//data.colors[lineFunctionSeriesIndex];
 							});
 	
 						// append a group to contain all lines
-						lines = graph.append("svg:g")
+						svgLines = graph.append("svg:g")
 							.attr("class", "lines")
 							.selectAll("path")
-							.data(data.values); // bind the array of arrays
+							.data(lines); // bind the array of arrays
 	
 						// persist this reference so we don't do the selector every mouse event
 						hoverContainer = container.querySelector('g .lines');
@@ -494,34 +439,35 @@ MOD_chart.directive('chart', function () {
 	
 									
 						// add a line group for each array of values (it will iterate the array of arrays bound to the data function above)
-						linesGroup = lines.enter().append("g")
+						svgLinesGroup = svgLines.enter().append("g")
 								.attr("class", function(d, i) {
 									return "line_group series_" + i;
 								});
 								
 						// add path (the actual line) to line group
-						linesGroup.append("path")
+						svgLinesGroup.append("path")
 								.attr("class", function(d, i) {
 									return "line series_" + i;
 								})
 								.attr("fill", "none")
 								.attr("stroke", function(d, i) {
-									return data.colors[i];
+									return d.color || "red";
 								})
-								.attr("d", lineFunction) // use the 'lineFunction' to create the data points in the correct x,y axis
-								
+								.attr("d", function(d, i) {
+									return lineFunction(d.data); // use the 'lineFunction' to create the data points in the correct x,y axis
+								})
 								.on('mouseover', function(d, i) {
 									handleMouseOverLine(d, i);
 								});
 						
 						// add a group of points for discrete line groups
 						var discreteColors = [];
-						linesGroupDiscrete = lines.enter().append("g")
+						svgLinesGroupDiscrete = svgLines.enter().append("g")
 							.filter(function(d, i) {
-								if (!!data.discrete[i]) {
-									discreteColors.push(data.colors[i]);
+								if (!!d.drawCircles) {
+									discreteColors.push(d.color || "red");
 								}
-								return !!data.discrete[i];
+								return !!d.drawCircles;
 							})
 							.attr("class", function(d, i) {
 								return "line_group series_" + i;
@@ -529,7 +475,7 @@ MOD_chart.directive('chart', function () {
 						
 						// add data points to the line group (if dataset is discrete)
 						lineFunctionSeriesIndex = -1;
-						linesGroupDiscrete.selectAll(".dot")
+						svgLinesGroupDiscrete.selectAll(".dot")
 							.data(function(d, i) {
 								return d;
 							})
@@ -551,11 +497,11 @@ MOD_chart.directive('chart', function () {
 							});
 							
 						// add line label to line group
-						linesGroupText = linesGroup.filter(function(d, i) {
-								return data.showLegend[i];
+						svgLinesGroupText = svgLinesGroup.filter(function(d, i) {
+								return d.showLegend;
 							})
 							.append("svg:text");
-						linesGroupText.attr("class", function(d, i) {
+						svgLinesGroupText.attr("class", function(d, i) {
 								return "line_label series_" + i;
 							})
 							.text(function(d, i) {
@@ -615,23 +561,20 @@ MOD_chart.directive('chart', function () {
 						var legendLabelGroup = graph.append("svg:g")
 								.attr("class", "legend-group")
 							.selectAll("g")
-								.data(data.displayNames)
+								.data(legendEntries)
 							.enter().append("g")
-							.filter(function(d, i) {
-								return data.showLegend[i];
-							})
 								.attr("class", "legend-labels");
 								
 						legendLabelGroup.append("svg:text")
 								.attr("class", "legend name")
 								.text(function(d, i) {
-									return d;
+									return d.name;
 								})
 								.attr("font-size", legendFontSize)
 								.attr("style", "text-anchor:end")
 								.attr("fill", function(d, i) {
 									// return the color for this row
-									return data.colors[i];
+									return d.color;
 								})
 								.attr("y", function(d, i) {
 									return 20+i*20;
@@ -643,7 +586,7 @@ MOD_chart.directive('chart', function () {
 								.attr("class", "legend value")
 								.attr("font-size", legendFontSize)
 								.attr("fill", function(d, i) {
-									return data.colors[i];
+									return d.color;
 								})
 								.attr("y", function(d, i) {
 									return 20+i*20;
@@ -927,9 +870,8 @@ MOD_chart.directive('chart', function () {
 					* Return {value: value, date, date}
 					*/
 					var getValueForPositionXFromData = function(xPosition, dataSeriesIndex) {
-						var d = data.values[dataSeriesIndex]
+						var d = lines[dataSeriesIndex].data;
 						var xValue = x.invert(xPosition);
-						var index = (xValue - 1) / data.step;
 						var dlength = !!d ? d.length : 0;//_.size(d);
 						
 						if (xValue >= d[0][0] && xValue <= d[dlength-1][0]) {
@@ -996,4 +938,4 @@ MOD_chart.directive('chart', function () {
 			};
 		}
 	};
-});
+}]);
