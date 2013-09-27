@@ -455,6 +455,12 @@ MOD_chart.directive('chart', ['util', function (util) {
 								.attr("stroke", function(d, i) {
 									return d.color || "red";
 								})
+								.attr("stroke-width", function(d, i) {
+									return d.width || '1.0px';
+								})
+								.attr("stroke-dasharray", function(d, i) {
+									return d.dasharray;
+								})
 								.attr("d", function(d, i) {
 									return lineFunction(d.data); // use the 'lineFunction' to create the data points in the correct x,y axis
 								})

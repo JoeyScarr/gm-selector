@@ -239,13 +239,16 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 				yScale: 'log',
 				lines: []
 			}
+			var last = realizationLines.length - 1;
 			for (var i = 0; i < realizationLines.length; ++i) {
 				chart.lines.push({
-					'name': 'Realization ' + (i + 1),
+					'name': 'Single Realization',
 					'isDiscrete': true,
+					'drawCircles': i == last,
 					'data': realizationLines[i],
-					'color': 'blue',
-					'showLegend': false
+					'color': i == last ? 'black' : 'gray',
+					'width': i == last ? '2.0px' : '1.0px',
+					'showLegend': i == last
 				});
 			}
 			
@@ -254,6 +257,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 				'name': 'GCIM median',
 				'isDiscrete': true,
 				'data': medianLine,
+				'width': '2.0px',
 				'color': 'red'
 			});
 		}
