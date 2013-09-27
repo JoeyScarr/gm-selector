@@ -15,10 +15,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 		replace: true,
 		scope: {
 			data: '=',
-			id: '=',
-			scale: '=',
-			xscale: '=',
-			yscale: '='
+			id: '='
 		},
 		compile: function compile(element, attrs) {
 			
@@ -30,8 +27,6 @@ MOD_chart.directive('chart', ['util', function (util) {
 			return function link(scope, element, attrs) {
 				var id = scope.id || 'mychart';
 				element[0].id = scope.id;
-				var scaleX = scope.xscale || scope.scale || SCALE_LOG;
-				var scaleY = scope.yscale || scope.scale || SCALE_LOG;
 				scope.$watch('data', function (newVal, oldVal) {
 					$('#' + id).empty();
 					
@@ -80,6 +75,9 @@ MOD_chart.directive('chart', ['util', function (util) {
 								ymax = Math.max(ymax, line.limits.ymax);
 							}
 						}
+						
+						var scaleX = newVal.xScale || newVal.scale || SCALE_LINEAR;
+						var scaleY = newVal.yScale || newVal.scale || SCALE_LINEAR;
 						
 						var argsMap = {
 							containerId: id,
@@ -155,8 +153,8 @@ MOD_chart.directive('chart', ['util', function (util) {
 					
 					var scales = [[SCALE_LINEAR,'Linear'], [SCALE_LOG,'Log']];
 					// Default scales
-					var yScale = util.defaultFor(argsMap.scaleY, SCALE_LOG); // can be pow, log, linear
-					var xScale = util.defaultFor(argsMap.scaleX, SCALE_LOG); // can be pow, log, linear
+					var yScale = argsMap.scaleY;
+					var xScale = argsMap.scaleX;
 					
 					// Axis labels
 					var xAxisLabel = util.defaultFor(argsMap.xAxisLabel, 'X Axis');

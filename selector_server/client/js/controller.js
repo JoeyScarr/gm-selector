@@ -170,6 +170,8 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 				xAxisLabel: IMi.name,
 				yAxisLabel: 'Cumulative Probability, CDF',
 				showYAxisScaleButtons: false,
+				xScale: 'log',
+				yScale: 'linear',
 				lines: [
 					{
 						'name': 'GCIM distribution',
@@ -233,6 +235,8 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 				name: 'SA',
 				xAxisLabel: 'Period, T (s)',
 				yAxisLabel: 'Spectral acceleration, SA (g)',
+				xScale: 'log',
+				yScale: 'log',
 				lines: []
 			}
 			for (var i = 0; i < realizationLines.length; ++i) {
