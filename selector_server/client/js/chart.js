@@ -208,7 +208,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 						}
 					});
 					
-					var hoverContainer, hoverLine, hoverLineXOffset, hoverLineYOffset, hoverLineGroup;
+					var hoverContainer, hoverLine, hoverLineGroup;
 					var legendFontSize = 12; // we can resize dynamically to make fit so we remember it here
 					
 					// define dimensions of graph
@@ -799,7 +799,9 @@ MOD_chart.directive('chart', ['util', function (util) {
 					/**
 					 * Called when a user mouses over the graph.
 					 */
-					var handleMouseOverGraph = function(event) {	
+					var handleMouseOverGraph = function(event) {
+						var hoverLineXOffset = marginLeft+$(container).offset().left;
+						var hoverLineYOffset = marginTop+$(container).offset().top;
 						var mouseX = event.pageX-hoverLineXOffset;
 						var mouseY = event.pageY-hoverLineYOffset;
 						
@@ -918,8 +920,6 @@ MOD_chart.directive('chart', ['util', function (util) {
 					var initDimensions = function() {
 						w = parseInt(width) - marginLeft - marginRight; // width
 						h = parseInt(height) - marginTop - marginBottom; // height
-						hoverLineXOffset = marginLeft+$(container).offset().left;
-						hoverLineYOffset = marginTop+$(container).offset().top;
 					}
 					
 					/**
