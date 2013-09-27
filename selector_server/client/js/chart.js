@@ -180,7 +180,7 @@ MOD_chart.directive('chart', function () {
 					var data;
 						
 					// define dimensions of graph
-					var margin = [-1, -1, -1, -1]; // margins (top, right, bottom, left)
+					var marginTop = 15, marginRight = 20, marginBottom = 35, marginLeft = 70;
 					var w, h;	 // width & height
 					
 					var transitionDuration = 300;
@@ -200,12 +200,6 @@ MOD_chart.directive('chart', function () {
 						// required variables that we'll throw an error on if we don't find
 						containerId = getRequiredVar(argsMap, 'containerId');
 						container = document.querySelector('#' + containerId);
-						
-						// margins with defaults (do this before processDataMap since it can modify the margins)
-						margin[0] = getOptionalVar(argsMap, 'marginTop', 15) // marginTop allows fitting the actions, date and top of axis labels
-						margin[1] = getOptionalVar(argsMap, 'marginRight', 20)
-						margin[2] = getOptionalVar(argsMap, 'marginBottom', 35) // marginBottom allows fitting the legend along the bottom
-						margin[3] = getOptionalVar(argsMap, 'marginLeft', 70) // marginLeft allows fitting the axis labels
 						
 						// assign instance vars from dataMap
 						data = processDataMap(getRequiredVar(argsMap, 'data'));
@@ -310,13 +304,6 @@ MOD_chart.directive('chart', function () {
 					}
 					
 					var redrawLines = function(withTransition) {
-						/**
-						* This is a hack to deal with the left/right axis.
-						* See createGraph for a larger comment explaining this. 
-						* Yes, it's ugly. If you can suggest a better solution please do.
-						*/
-						lineFunctionSeriesIndex  =-1;
-						
 						// redraw lines
 						if(withTransition) {
 							graph.selectAll("g .lines path")
@@ -342,7 +329,6 @@ MOD_chart.directive('chart', function () {
 								.attr("d", lineFunction)
 								.attr("transform", null);
 								
-							lineFunctionSeriesIndex = -1;
 							graph.selectAll("g .lines .dot")
 								.attr("cx", function(d) {
 									return x(d[0]);
@@ -419,10 +405,10 @@ MOD_chart.directive('chart', function () {
 						// Add an SVG element with the desired dimensions and margin.
 						graph = d3.select("#" + containerId).append("svg:svg")
 								.attr("class", "line-graph")
-								.attr("width", w + margin[1] + margin[3])
-								.attr("height", h + margin[0] + margin[2])	
+								.attr("width", w + marginLeft + marginRight)
+								.attr("height", h + marginTop + marginBottom)
 								.append("svg:g")
-								.attr("transform", "translate(" + margin[3] + "," + margin[0] + ")");
+								.attr("transform", "translate(" + marginLeft + "," + marginTop + ")");
 						
 						initX();
 						
@@ -969,10 +955,10 @@ MOD_chart.directive('chart', function () {
 					 * Set height/width dimensions based on container.
 					 */
 					var initDimensions = function() {
-						w = parseInt(width) - margin[1] - margin[3]; // width
-						h = parseInt(height) - margin[0] - margin[2]; // height
-						hoverLineXOffset = margin[3]+$(container).offset().left;
-						hoverLineYOffset = margin[0]+$(container).offset().top;
+						w = parseInt(width) - marginLeft - marginRight; // width
+						h = parseInt(height) - marginTop - marginBottom; // height
+						hoverLineXOffset = marginLeft+$(container).offset().left;
+						hoverLineYOffset = marginTop+$(container).offset().top;
 					}
 					
 					/**
