@@ -189,13 +189,15 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 						'name': 'Upper KS bound (\u03b1 = ' + $scope.alpha + ')',
 						'isDiscrete': true,
 						'data': upperKSbound,
-						'color': 'red'
+						'color': 'red',
+						'dasharray': '5,5'
 					},
 					{
 						'name': 'Lower KS bound (\u03b1 = ' + $scope.alpha + ')',
 						'isDiscrete': true,
 						'data': lowerKSbound,
-						'color': 'red'
+						'color': 'red',
+						'dasharray': '5,5'
 					}
 				]
 			}
@@ -246,8 +248,8 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 					'isDiscrete': true,
 					'drawCircles': i == last,
 					'data': realizationLines[i],
-					'color': i == last ? 'black' : 'gray',
-					'width': i == last ? '2.0px' : '1.0px',
+					'color': i == last ? 'black' : 'blue',
+					'width': i == last ? '2.5px' : '0.35px',
 					'showLegend': i == last
 				});
 			}
@@ -257,7 +259,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 				'name': 'GCIM median',
 				'isDiscrete': true,
 				'data': medianLine,
-				'width': '2.0px',
+				'width': '2.5px',
 				'color': 'red'
 			});
 		}
