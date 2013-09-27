@@ -212,6 +212,8 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 		var chart = null;
 		var realizationLines = [];
 		var medianLine = [];
+		var line16 = [];
+		var line84 = [];
 		for (var i = 0; i < data.numIMi; ++i) {
 			var IMi = data.IMi[i];
 			if (IMi.name.substr(0,2) == 'SA') {
@@ -228,7 +230,14 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 					realizationLines[j].push([period, IMi.realizations[j][0]]);
 				}
 				
-				medianLine.push([period, util.median(IMi.sortedRealizations)]);
+				// Calculate the median and 16th and 84th percentiles.
+				var cdf = $.map(IMi.GCIMvalues, function(val, i) {
+					// Swap the x and y of the CDF for interpolation.
+					return [[val[1], val[0]]];
+				});
+				medianLine.push([period, util.interp_array(cdf, 0.5)]);
+				line16.push([period, util.interp_array(cdf, 0.16)]);
+				line84.push([period, util.interp_array(cdf, 0.84)]);
 			}
 		}
 		
@@ -261,6 +270,26 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 				'isDiscrete': true,
 				'data': medianLine,
 				'width': '2.5px',
+				'color': 'red'
+			});
+			
+			// Add 16th percentile line
+			chart.lines.push({
+				'name': 'GCIM 16th percentile',
+				'isDiscrete': true,
+				'data': line16,
+				'width': '2.5px',
+				'dasharray': '10,10',
+				'color': 'red'
+			});
+			
+			// Add 84th percentile line
+			chart.lines.push({
+				'name': 'GCIM 84th percentile',
+				'isDiscrete': true,
+				'data': line84,
+				'width': '2.5px',
+				'dasharray': '10,10',
 				'color': 'red'
 			});
 		}
