@@ -3,6 +3,8 @@
 // Declares the chart module, which draws charts.
 var MOD_chart = angular.module('chart', []);
 
+// TODO: Document the input format for the chart directive here.
+
 // Create a directive for building charts.
 MOD_chart.directive('chart', ['util', function (util) {
 	// Constants
@@ -32,7 +34,8 @@ MOD_chart.directive('chart', ['util', function (util) {
 					
 					if (!!newVal && !!newVal.lines && newVal.lines.length > 0) {
 						var lines = newVal.lines;
-						var extraPoints = newVal.extraPoints;
+						var extraPoints = newVal.extraPoints || [];
+						var linePoints = [];
 						
 						// Convert function-based lines into discrete lines.
 						for (var i = 0; i < lines.length; ++i) {
@@ -45,6 +48,22 @@ MOD_chart.directive('chart', ['util', function (util) {
 										return [x, val.func(x)];
 									});
 								line.data = points;
+							}
+						}
+						
+						// For lines that have circles shown, add their points to the
+						// extraPoints array.
+						for (var i = 0; i < lines.length; ++i) {
+							var line = lines[i];
+							if (line.drawCircles) {
+								linePoints = linePoints.concat($.map(line.data, function(val, i) {
+									return {
+										x: val[0],
+										y: val[1],
+										color: line.color,
+										width: line.width
+									};
+								}));
 							}
 						}
 						
@@ -88,6 +107,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 								ymax: ymax
 							},
 							lines: lines,
+							linePoints: linePoints,
 							extraPoints: extraPoints,
 							scaleX: scaleX,
 							scaleY: scaleY,
@@ -147,7 +167,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 					var graph, x, yLeft, xAxis, yAxisLeft, yAxisLeftDomainStart;
 					
 					// SVG elements
-					var svgLinesGroup, svgLinesGroupDiscrete, svgExtraPoints, svgExtraPointsGroup, svgLinesGroupText, svgLines;
+					var svgLinesGroup, svgExtraPoints, svgLinePoints, svgLinesGroupText, svgLines;
 					
 					var lineFunction, lineFunctionSeriesIndex = -1;
 					
@@ -167,7 +187,8 @@ MOD_chart.directive('chart', ['util', function (util) {
 					
 					// Data
 					var lines = argsMap.lines;
-					var extraPoints = util.defaultFor(argsMap.extraPoints, []);
+					var linePoints = argsMap.linePoints;
+					var extraPoints = argsMap.extraPoints;
 					// Set up legend entries for those lines that display them.
 					var legendEntries = $.map(lines, function(val, i) {
 						if (val.showLegend == null || val.showLegend) {
@@ -262,10 +283,10 @@ MOD_chart.directive('chart', ['util', function (util) {
 									.duration(transitionDuration)
 									.ease("linear")
 									.attr("cx", function(d) {
-										return x(d[0]);
+										return x(d.x);
 									})
 									.attr("cy", function(d) {
-										return yLeft(d[1]);
+										return yLeft(d.y);
 									})
 									.attr("transform", null);
 						} else {
@@ -277,10 +298,10 @@ MOD_chart.directive('chart', ['util', function (util) {
 								
 							graph.selectAll("g .lines .dot")
 								.attr("cx", function(d) {
-									return x(d[0]);
+									return x(d.x);
 								})
 								.attr("cy", function(d) {
-									return yLeft(d[1]);
+									return yLeft(d.y);
 								})
 								.attr("transform", null);
 						}
@@ -390,36 +411,18 @@ MOD_chart.directive('chart', ['util', function (util) {
 							.attr("class", "lines")
 							.selectAll(".dot")
 							.data(extraPoints) // bind the array of arrays
-						
-						svgExtraPointsGroup = svgExtraPoints.enter().append("g")
-							.filter(function(d, i) {
-								return !!data.extraPoints[i];
-							})
-							.attr("class", function(d, i) {
-								return "line_group series_" + i;
-							});
-						
-						// add the extra data points
-						lineFunctionSeriesIndex = -1;
-						svgExtraPointsGroup.selectAll(".dot")
-							.data(function(d, i) {
-								return d;
-							})
 							.enter().append("svg:circle")
 							.attr("class", "dot")
 							.attr("r", 3.5)
 							.attr("cx", function(d) {
-								return x(d[0]);
+								return x(d.x);
 							})
 							.attr("cy", function(d) {
-								return yLeft(d[1]);
+								return yLeft(d.y);
 							})
 							.attr("fill", "transparent")
 							.attr("stroke", function(d, i) {
-								if (i == 0) {
-									lineFunctionSeriesIndex++;
-								}
-								return d.color || "gray";//data.colors[lineFunctionSeriesIndex];
+								return d.color || "gray";
 							});
 	
 						// append a group to contain all lines
@@ -468,42 +471,28 @@ MOD_chart.directive('chart', ['util', function (util) {
 									handleMouseOverLine(d, i);
 								});
 						
-						// add a group of points for discrete line groups
-						var discreteColors = [];
-						svgLinesGroupDiscrete = svgLines.enter().append("g")
-							.filter(function(d, i) {
-								if (!!d.drawCircles) {
-									discreteColors.push(d.color || "red");
-								}
-								return !!d.drawCircles;
-							})
-							.attr("class", function(d, i) {
-								return "line_group series_" + i;
-							});
-						
-						// add data points to the line group (if dataset is discrete)
-						lineFunctionSeriesIndex = -1;
-						svgLinesGroupDiscrete.selectAll(".dot")
-							.data(function(d, i) {
-								return d;
-							})
+						// add a group of points to display circles on lines
+						svgLinePoints = graph.append("svg:g")
+							.attr("class", "lines")
+							.selectAll(".dot")
+							.data(linePoints) // bind the array of arrays
 							.enter().append("svg:circle")
 							.attr("class", "dot")
 							.attr("r", 3.5)
 							.attr("cx", function(d) {
-								return x(d[0]);
+								return x(d.x);
 							})
 							.attr("cy", function(d) {
-								return yLeft(d[1]);
+								return yLeft(d.y);
 							})
 							.attr("fill", "transparent")
 							.attr("stroke", function(d, i) {
-								if (i == 0) {
-									lineFunctionSeriesIndex++;
-								}
-								return discreteColors[lineFunctionSeriesIndex];
+								return d.color || "red";
+							})
+							.attr("stroke-width", function(d, i) {
+								return d.width || '1.0px';
 							});
-							
+						
 						// add line label to line group
 						svgLinesGroupText = svgLinesGroup.filter(function(d, i) {
 								return d.showLegend;
