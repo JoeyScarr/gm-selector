@@ -132,6 +132,19 @@
 						<input class="btn btn-primary" type="button" ng-disabled="!dbLoaded" ng-click="selectGMs()" value="Select Ground Motions" />
 					</div>
 				</div>
+				
+				<hr />
+				
+				<!-- Output charts -->
+				<p ng-show="outputChartData.length > 0">
+					Show chart for:
+					<select ng-model="visibleOutputChart"
+									ng-options="chart.name as chart.name for chart in outputChartData">
+					</select>
+				</p>
+				<div ng-repeat="chart in outputChartData" ng-show="chart.name == visibleOutputChart">
+					<chart id="'outputChart' + $index" data="chart" width="660px" height="400px"></chart>
+				</div>
 			</div>
 			<h3 ng-show="!!selectionOutput">Output</h3>
 			<span ng-show="!!selectionOutput">

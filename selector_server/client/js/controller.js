@@ -49,6 +49,8 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 	$scope.input = null;
 	$scope.chartData = [];
 	$scope.visibleChart = 'SA';
+	$scope.outputChartData = [];
+	$scope.visibleOutputChart = 'SA';
 	$scope.selectionOutput = null;
 	$scope.selectionOutputString = null;
 	
@@ -86,6 +88,11 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 				$scope.debugOutput += output + '\n';
 			}, $scope.Ngms, $scope.Nreplicates, $scope.repeatability);
 		$scope.selectionOutputString = $scope.formatOutput($scope.selectionOutput);
+		$scope.outputChartData = $scope.plotOutputCharts($scope.selectionOutput);
+		var SAChartData = $scope.plotOutputSAChart($scope.selectionOutput);
+		if (SAChartData) {
+			$scope.outputChartData.splice(0,0,SAChartData);
+		}
 	};
 	
 	$scope.formatOutput = function(output) {
@@ -144,7 +151,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 	};
 	
 	// Generates and returns charts for the parsed input data.
-	$scope.plot = function(data) {
+	$scope.plotInputCharts = function(data) {
 		var charts = [];
 		for (var i = 0; i < data.numIMi; ++i) {
 			var IMi = data.IMi[i];
@@ -212,7 +219,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 	};
 	
 	// Generates a plot of Spectral Acceleration against period, T (if SA data is present).
-	$scope.plotSA = function(data) {
+	$scope.plotInputSAChart = function(data) {
 		var chart = null;
 		var realizationLines = [];
 		var medianLine = [];
@@ -299,7 +306,182 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 		}
 		
 		return chart;
-	}
+	};
+	
+	$scope.plotOutputCharts = function(data) {
+		var charts = [];
+		for (var i = 0; i < data.IMi.length; ++i) {
+			var IMi = data.IMi[i];
+			
+			// Calculate KS bounds.
+			var ksCriticalValue = util.ks_critical_value(IMi.realizations.length, $scope.alpha);
+			var upperKSbound = [];
+			var lowerKSbound = [];
+			for (var j = 0; j < IMi.GCIMvalues.length; ++j) {
+				var x = IMi.GCIMvalues[j][0];
+				var y_upper = IMi.GCIMvalues[j][1] + ksCriticalValue;
+				var y_lower = IMi.GCIMvalues[j][1] - ksCriticalValue;
+				if (y_upper <= 1) {
+					upperKSbound.push([x, y_upper]);
+				}
+				if (y_lower >= 0) {
+					lowerKSbound.push([x, y_lower]);
+				}
+			}
+			
+			// Get selected ground motion values for this IM.
+			var values = [];
+			for (var j = 0; j < data.selectedGroundMotions.length; ++j) {
+				var gm = data.selectedGroundMotions[j];
+				values.push(gm.scaledIM[IMi.name]);
+			}
+			
+			// Build a CDF from the values.
+			var selectedCDF = util.build_cdf(values);
+			
+			var chart = {
+				name: IMi.name,
+				xAxisLabel: IMi.name,
+				yAxisLabel: 'Cumulative Probability, CDF',
+				showYAxisScaleButtons: false,
+				xScale: 'log',
+				yScale: 'linear',
+				legendPosition: 'bottom',
+				lines: [
+					{
+						'name': 'GCIM distribution',
+						'isDiscrete': true,
+						'data': IMi.GCIMvalues,
+						'color': 'red',
+						'width': '1.5px'
+					},
+					{
+						'name': 'Realized GCIM values',
+						'isDiscrete': true,
+						'data': IMi.realizationCDF,
+						'color': 'blue',
+						'width': '1.5px'
+					},
+					{
+						'name': 'Selected GCIM values',
+						'isDiscrete': true,
+						'data': selectedCDF,
+						'color': 'gray',
+						'width': '1.5px'
+					},
+					{
+						'name': 'Upper KS bound (\u03b1 = ' + $scope.alpha + ')',
+						'isDiscrete': true,
+						'data': upperKSbound,
+						'color': 'red',
+						'dasharray': '10,10',
+						'width': '1.5px'
+					},
+					{
+						'name': 'Lower KS bound (\u03b1 = ' + $scope.alpha + ')',
+						'isDiscrete': true,
+						'data': lowerKSbound,
+						'color': 'red',
+						'dasharray': '10,10',
+						'width': '1.5px'
+					}
+				]
+			}
+			charts.push(chart);
+		}
+		return charts;
+	};
+	
+	// Generates a plot of Spectral Acceleration against period, T (if SA data is present).
+	$scope.plotOutputSAChart = function(data) {
+		var chart = null;
+		var gmLines = [];
+		var medianLine = [];
+		var line16 = [];
+		var line84 = [];
+		for (var i = 0; i < data.IMi.length; ++i) {
+			var IMi = data.IMi[i];
+			if (IMi.name.substr(0,2) == 'SA') {
+				// Initialize the lines array if it's empty
+				if (gmLines.length == 0) {
+					for (var j = 0; j < data.selectedGroundMotions.length; ++j) {
+						gmLines.push([]);
+					}
+				}
+				
+				var period = IMi.period;
+				// Add points to each ground motion line for this period
+				for (var j = 0; j < data.selectedGroundMotions.length; ++j) {
+					var gm = data.selectedGroundMotions[j];
+					gmLines[j].push([period, gm.scaledIM[IMi.name]]);
+				}
+				
+				// Calculate the median and 16th and 84th percentiles.
+				var cdf = $.map(IMi.GCIMvalues, function(val, i) {
+					// Swap the x and y of the CDF for interpolation.
+					return [[val[1], val[0]]];
+				});
+				medianLine.push([period, util.interp_array(cdf, 0.5)]);
+				line16.push([period, util.interp_array(cdf, 0.16)]);
+				line84.push([period, util.interp_array(cdf, 0.84)]);
+			}
+		}
+		
+		// If there were SAs in the data, build the chart.
+		if (gmLines.length > 0) {
+			chart = {
+				name: 'SA',
+				xAxisLabel: 'Period, T (s)',
+				yAxisLabel: 'Spectral acceleration, SA (g)',
+				xScale: 'log',
+				yScale: 'log',
+				lines: []
+			}
+			var last = gmLines.length - 1;
+			for (var i = 0; i < gmLines.length; ++i) {
+				chart.lines.push({
+					'name': 'Single Realization',
+					'isDiscrete': true,
+					'drawCircles': i == last,
+					'data': gmLines[i],
+					'color': i == last ? 'black' : 'gray',
+					'width': i == last ? '2.5px' : '1px',
+					'showLegend': i == last
+				});
+			}
+			
+			// Add median line
+			chart.lines.push({
+				'name': 'GCIM median',
+				'isDiscrete': true,
+				'data': medianLine,
+				'width': '2.5px',
+				'color': 'red'
+			});
+			
+			// Add 16th percentile line
+			chart.lines.push({
+				'name': 'GCIM 16th percentile',
+				'isDiscrete': true,
+				'data': line16,
+				'width': '2.5px',
+				'dasharray': '10,10',
+				'color': 'red'
+			});
+			
+			// Add 84th percentile line
+			chart.lines.push({
+				'name': 'GCIM 84th percentile',
+				'isDiscrete': true,
+				'data': line84,
+				'width': '2.5px',
+				'dasharray': '10,10',
+				'color': 'red'
+			});
+		}
+		
+		return chart;
+	};
 	
 	// Called when the user selects a new input file.
 	$scope.handleFileSelect = function(event) {
@@ -311,8 +493,8 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 					$scope.$apply(function($scope) {
 						try {
 							$scope.input = inputReader.parse(e.target.result);
-							$scope.chartData = $scope.plot($scope.input);
-							var SAChartData = $scope.plotSA($scope.input);
+							$scope.chartData = $scope.plotInputCharts($scope.input);
+							var SAChartData = $scope.plotInputSAChart($scope.input);
 							if (SAChartData) {
 								$scope.chartData.splice(0,0,SAChartData);
 							}
