@@ -197,6 +197,21 @@ MOD_util.factory('util', function() {
 				maxDiff = Math.max(maxDiff, diff);
 			}
 			return maxDiff;
+		},
+		build_cdf: function(values) {
+			var numValues = values.length;
+			// First, sort in ascending order.
+			var sortedValues = values.slice(0);
+			sortedValues.sort(function(a,b){return a-b;});
+			// Then iterate over all realizations and count them.
+			var count = 0.0;
+			var cdf = [];
+			for (var j = 0; j < numValues; ++j) {
+				cdf.push([sortedValues[j],count/numValues]);
+				count += 1.0;
+				cdf.push([sortedValues[j],count/numValues]);
+			}
+			return cdf;
 		}
 	};
 });

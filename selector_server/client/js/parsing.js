@@ -4,7 +4,7 @@
 var MOD_parsing = angular.module('parsing', []);
 
 // Set up an inputReader service, which parses OpenSHA output files.
-MOD_parsing.factory('inputReader', function() {
+MOD_parsing.factory('inputReader', ['util', function(util) {
 	return {
 		parse: function(inputText) {
 			var lines = $.map(inputText.split('\n'),function(str) {
@@ -106,23 +106,14 @@ MOD_parsing.factory('inputReader', function() {
 			
 			// Precompute discrete CDFs for the realizations of each IMi.
 			for (var i = 0; i < numIMi; ++i) {
-				GCIMoutput.IMi[i].realizationCDF = [];
-				// First, sort in ascending order.
-				var sortedRealizations = GCIMoutput.IMi[i].realizations.slice(0);
-				sortedRealizations.sort(function(a,b){return a[0]-b[0];});
-				// Then iterate over all realizations and count them.
-				var count = 0.0;
-				for (var j = 0; j < numIMiRealizations; ++j) {
-					GCIMoutput.IMi[i].realizationCDF.push([sortedRealizations[j][0],count/numIMiRealizations]);
-					count += 1.0;
-					GCIMoutput.IMi[i].realizationCDF.push([sortedRealizations[j][0],count/numIMiRealizations]);
-				}
-				// Store the sorted realizations for later
-				GCIMoutput.IMi[i].sortedRealizations = sortedRealizations;
+				GCIMoutput.IMi[i].realizationCDF = util.build_cdf(
+						$.map(GCIMoutput.IMi[i].realizations, function(val) {
+							return val[0];
+						}));
 			}
 			
 			// Output the data structure.
 			return GCIMoutput;
 		}
 	};
-});
+}]);

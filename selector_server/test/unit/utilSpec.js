@@ -148,4 +148,10 @@ describe('Util module', function(){
 			expect(util.ks_critical_value(n,alpha)).toEqual(criticalValue);
 		}));
 	});
+	
+	describe('build_cdf', function() {
+		it('should correctly build a small CDF', inject(function(util) {
+			expect(util.build_cdf([1,2])).toEqual([[1,0], [1,0.5], [2,0.5], [2,1]]);
+		}));
+	});
 });
