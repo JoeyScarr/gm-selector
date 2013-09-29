@@ -825,11 +825,6 @@ MOD_chart.directive('chart', ['util', function (util) {
 					
 					
 					var handleMouseOutGraph = function(event) {	
-						//hide the hover-line
-						hoverLine.classed("hide", true);
-						
-						setValueLabelsToLatest();
-						
 						//user is no longer interacting
 						userCurrentlyInteracting = false;
 						currentUserPositionX = -1;
