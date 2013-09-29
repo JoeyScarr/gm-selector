@@ -57,7 +57,7 @@
 				</div>
 			</div>
 			<div class="output panel">
-				<p>
+				<div>
 					<b>Choose database of actual ground motions:</b>
 					<select ng-model="databaseName" ng-options="db.name as db.label for db in databases">
 						<option value="">-- Choose database --</option>
@@ -68,15 +68,57 @@
 					<span ng-show="dbLoaded">
 						<img alt="Database loaded." src="images/tick.png" style="vertical-align: top" />
 					</span>
-				</p>
+				</div>
 				
 				<div ng-show="!!input">
-					<div>
-						<b>Choose IM weightings:</b>
-						<a href="#weightings" role="button" class="btn" data-toggle="modal">Weightings</a>
-					</div>
+					<hr />
+					<table>
+						<tr>
+							<td style="width:500px">
+								<table>
+									<tr>
+										<td>
+											<b>Choose IM weightings:</b>
+										</td>
+										<td style="text-align:right">
+											<a href="#weightings" role="button" class="btn" data-toggle="modal">Weightings</a>
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<b>Number of ground motions to select:</b>
+										</td>
+										<td style="text-align:right">
+											<input type="number" class="smallnumerical" ng-model="Ngms" />
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<b>Number of replicates to analyse:</b>
+										</td>
+										<td style="text-align:right">
+											<input type="number" class="smallnumerical" ng-model="Nreplicates" />
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<b>Repeatable (same result every time)?</b>
+										</td>
+										<td style="text-align:right">
+											<input type="checkbox" ng-model="repeatability" />
+										</td>
+									</tr>
+								</table>
+							</td>
+							<td style="vertical-align:bottom">
+								<div>
+									<input class="btn btn-primary" type="button" ng-disabled="!dbLoaded" ng-click="selectGMs()" value="Select Ground Motions" />
+								</div>
+							</td>
+						</tr>
+					</table>
 					
-					<!-- Modal -->
+					<!-- Weightings modal -->
 					<div id="weightings" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
 						<div class="modal-header">
 							<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -112,25 +154,6 @@
 							<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
 						</div>
 					</div>
-					
-					<div>
-						<b>Number of ground motions to select:</b>
-						<input type="number" class="smallnumerical" ng-model="Ngms" />
-					</div>
-					
-					<div>
-						<b>Number of realization samples (replicates) to analyse:</b>
-						<input type="number" class="smallnumerical" ng-model="Nreplicates" />
-					</div>
-					
-					<div>
-						<b>Repeatable (same result every time)?</b>
-						<input type="checkbox" ng-model="repeatability" />
-					</div>
-					
-					<div style="margin-top:20px">
-						<input class="btn btn-primary" type="button" ng-disabled="!dbLoaded" ng-click="selectGMs()" value="Select Ground Motions" />
-					</div>
 				</div>
 				
 				<hr />
@@ -146,7 +169,7 @@
 					<chart id="'outputChart' + $index" data="chart" width="660px" height="400px"></chart>
 				</div>
 			</div>
-			<h3 ng-show="!!selectionOutput">Output</h3>
+			<h3 ng-show="!!selectionOutput">Output tables</h3>
 			<span ng-show="!!selectionOutput">
 				<pre>{{ selectionOutputString }}</pre>
 			</span>
