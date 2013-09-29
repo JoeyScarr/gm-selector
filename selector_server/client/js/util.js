@@ -91,6 +91,7 @@ MOD_util.factory('util', function() {
 			}
 		},
 		binary_search: binary_search,
+		interpolate: interp,
 		interp_array: interp_array,
 		sample: function (n, k) {
 			k = Math.min(n, k);

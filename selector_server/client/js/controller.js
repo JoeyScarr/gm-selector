@@ -150,6 +150,39 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 		return outputString;
 	};
 	
+	var getKSbounds = function(values, ksCriticalValue) {
+		// Calculate KS bounds.
+		var upperKSbound = [];
+		var lowerKSbound = [];
+		for (var j = 0; j < values.length; ++j) {
+			var x = values[j][0];
+			var y_upper = values[j][1] + ksCriticalValue;
+			var y_lower = values[j][1] - ksCriticalValue;
+			if (y_upper <= 1) {
+				upperKSbound.push([x, y_upper]);
+			} else {
+				var prevYUpper = values[j-1][1] + ksCriticalValue;
+				if (prevYUpper <= 1) {
+					var interpolatedX = util.interpolate(values[j-1][0], x, (1-prevYUpper)/(y_upper-prevYUpper));
+					upperKSbound.push([interpolatedX, 1]);
+				}
+			}
+			if (y_lower >= 0) {
+				lowerKSbound.push([x, y_lower]);
+			} else {
+				var nextYLower = values[j+1][1] - ksCriticalValue;
+				if (nextYLower >= 0) {
+					var interpolatedX = util.interpolate(x, values[j+1][0], (-y_lower)/(nextYLower-y_lower));
+					lowerKSbound.push([interpolatedX, 0.000001]);
+				}
+			}
+		}
+		return {
+			upper: upperKSbound,
+			lower: lowerKSbound
+		};
+	};
+	
 	// Generates and returns charts for the parsed input data.
 	$scope.plotInputCharts = function(data) {
 		var charts = [];
@@ -158,19 +191,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 			
 			// Calculate KS bounds.
 			var ksCriticalValue = util.ks_critical_value(data.numIMiRealizations, $scope.alpha);
-			var upperKSbound = [];
-			var lowerKSbound = [];
-			for (var j = 0; j < IMi.GCIMvalues.length; ++j) {
-				var x = IMi.GCIMvalues[j][0];
-				var y_upper = IMi.GCIMvalues[j][1] + ksCriticalValue;
-				var y_lower = IMi.GCIMvalues[j][1] - ksCriticalValue;
-				if (y_upper <= 1) {
-					upperKSbound.push([x, y_upper]);
-				}
-				if (y_lower >= 0) {
-					lowerKSbound.push([x, y_lower]);
-				}
-			}
+			var ksBounds = getKSbounds(IMi.GCIMvalues, ksCriticalValue);
 			
 			var chart = {
 				name: IMi.name,
@@ -198,7 +219,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 					{
 						'name': 'Upper KS bound (\u03b1 = ' + $scope.alpha + ')',
 						'isDiscrete': true,
-						'data': upperKSbound,
+						'data': ksBounds.upper,
 						'color': 'red',
 						'dasharray': '10,10',
 						'width': '1.5px'
@@ -206,7 +227,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 					{
 						'name': 'Lower KS bound (\u03b1 = ' + $scope.alpha + ')',
 						'isDiscrete': true,
-						'data': lowerKSbound,
+						'data': ksBounds.lower,
 						'color': 'red',
 						'dasharray': '10,10',
 						'width': '1.5px'
@@ -315,19 +336,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 			
 			// Calculate KS bounds.
 			var ksCriticalValue = util.ks_critical_value(IMi.realizations.length, $scope.alpha);
-			var upperKSbound = [];
-			var lowerKSbound = [];
-			for (var j = 0; j < IMi.GCIMvalues.length; ++j) {
-				var x = IMi.GCIMvalues[j][0];
-				var y_upper = IMi.GCIMvalues[j][1] + ksCriticalValue;
-				var y_lower = IMi.GCIMvalues[j][1] - ksCriticalValue;
-				if (y_upper <= 1) {
-					upperKSbound.push([x, y_upper]);
-				}
-				if (y_lower >= 0) {
-					lowerKSbound.push([x, y_lower]);
-				}
-			}
+			var ksBounds = getKSbounds(IMi.GCIMvalues, ksCriticalValue);
 			
 			// Get selected ground motion values for this IM.
 			var values = [];
@@ -372,7 +381,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 					{
 						'name': 'Upper KS bound (\u03b1 = ' + $scope.alpha + ')',
 						'isDiscrete': true,
-						'data': upperKSbound,
+						'data': ksBounds.upper,
 						'color': 'red',
 						'dasharray': '10,10',
 						'width': '1.5px'
@@ -380,7 +389,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 					{
 						'name': 'Lower KS bound (\u03b1 = ' + $scope.alpha + ')',
 						'isDiscrete': true,
-						'data': lowerKSbound,
+						'data': ksBounds.lower,
 						'color': 'red',
 						'dasharray': '10,10',
 						'width': '1.5px'
