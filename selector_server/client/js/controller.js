@@ -299,6 +299,24 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 			}
 		}
 		
+		// Add in the conditioning IM if it was an SA value
+		if (data.IMjName.substr(0,2) == 'SA') {
+			var period = data.IMjPeriod;
+			var IML = data.IML;
+			// Find appropriate location to insert
+			var idx = 0;
+			while (period > medianLine[idx][0]) {
+				idx++;
+			}
+			// Add the conditioning value to all of the lines
+			medianLine.splice(idx, 0, [period, IML]);
+			line16.splice(idx, 0, [period, IML]);
+			line84.splice(idx, 0, [period, IML]);
+			for (var j = 0; j < data.numIMiRealizations; ++j) {
+				realizationLines[j].splice(idx, 0, [period, IML]);
+			}
+		}
+		
 		// If there were SAs in the data, build the chart.
 		if (realizationLines.length > 0) {
 			chart = {
