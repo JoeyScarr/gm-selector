@@ -51,13 +51,22 @@
 								<b>Number of simulated realizations:</b> {{ input.numIMiRealizations }}
 							</td>
 						</tr>
+						<tr>
+							<td>
+								<p ng-show="chartData.length > 0">
+									Show chart for:
+									<select ng-model="visibleChart"
+													ng-options="chart.name as chart.name for chart in chartData">
+									</select>
+								</p>
+							</td>
+							<td>
+								<p>
+									<b>&alpha;: <input type="number" class="mediumnumerical" min="0.01" max="0.2" step="0.01" ng-model="alpha" /></b>
+								</p>
+							</td>
+						</tr>
 					</table>
-				</p>
-				<p ng-show="chartData.length > 0">
-					Show chart for:
-					<select ng-model="visibleChart"
-									ng-options="chart.name as chart.name for chart in chartData">
-					</select>
 				</p>
 				<div ng-repeat="chart in chartData" ng-show="chart.name == visibleChart">
 					<chart id="'chart' + $index" data="chart" width="660px" height="400px"></chart>

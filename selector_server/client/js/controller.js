@@ -76,6 +76,20 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 		$scope.repeatability = true;
 	};
 	
+	$scope.$watch('alpha', function(newVal, oldVal) {
+		if (newVal != oldVal && newVal > 0 && newVal <= 1) {
+			$scope.updateInputCharts($scope.input);
+		}
+	}, true);
+	
+	$scope.updateInputCharts = function(input) {
+		$scope.chartData = $scope.plotInputCharts(input);
+		var SAChartData = $scope.plotInputSAChart(input);
+		if (SAChartData) {
+			$scope.chartData.splice(0,0,SAChartData);
+		}
+	};
+	
 	$scope.$watch('databaseName', function(newVal, oldVal) {
 		$scope.dbLoaded = false;
 		$scope.databaseData = null;
@@ -92,8 +106,6 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 			});
 		}
 	}, true);
-	
-	
 	
 	$scope.selectGMs = function() {
 		$scope.debugOutput = '';
@@ -515,11 +527,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 				$scope.$apply(function($scope) {
 					try {
 						$scope.input = inputReader.parse(e.target.result);
-						$scope.chartData = $scope.plotInputCharts($scope.input);
-						var SAChartData = $scope.plotInputSAChart($scope.input);
-						if (SAChartData) {
-							$scope.chartData.splice(0,0,SAChartData);
-						}
+						$scope.updateInputCharts($scope.input);
 						
 						$scope.inputJsonString = JSON.stringify($scope.input, null, 2);
 						$scope.fileLoaded = true;
