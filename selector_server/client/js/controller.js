@@ -46,7 +46,10 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 	$scope.Nreplicates = 1;
 	$scope.repeatability = true;
 	
+	$scope.fileLoading = false;
+	$scope.fileLoaded = false;
 	$scope.input = null;
+	
 	$scope.chartData = [];
 	$scope.visibleChart = 'SA';
 	$scope.outputChartData = [];
@@ -61,6 +64,17 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 	$scope.dbLoading = false;
 	$scope.databaseName = '';
 	$scope.databaseData = null;
+	
+	$scope.setSelectionDefaults = function() {
+		$scope.visibleChart = 'SA';
+		$scope.outputChartData = [];
+		$scope.visibleOutputChart = 'SA';
+		$scope.selectionOutput = null;
+		$scope.selectionOutputString = null;
+		$scope.Ngms = 30;
+		$scope.Nreplicates = 1;
+		$scope.repeatability = true;
+	};
 	
 	$scope.$watch('databaseName', function(newVal, oldVal) {
 		$scope.dbLoaded = false;
@@ -492,30 +506,44 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 		return chart;
 	};
 	
+	$scope.parseFile = function(file) {
+		$scope.fileLoaded = false;
+		$scope.fileLoading = true;
+		if (file) {
+			var r = new FileReader();
+			r.onload = function(e) {
+				$scope.$apply(function($scope) {
+					try {
+						$scope.input = inputReader.parse(e.target.result);
+						$scope.chartData = $scope.plotInputCharts($scope.input);
+						var SAChartData = $scope.plotInputSAChart($scope.input);
+						if (SAChartData) {
+							$scope.chartData.splice(0,0,SAChartData);
+						}
+						
+						$scope.inputJsonString = JSON.stringify($scope.input, null, 2);
+						$scope.fileLoaded = true;
+					} catch (err) {
+						alert("Error: Invalid file format.");
+					} 
+				});
+			};
+			r.readAsText(file);
+		} else {
+			$scope.input = null;
+			$scope.chartData = [];
+		}
+		$scope.fileLoading = false;
+		
+		// Reset variables to defaults
+		$scope.setSelectionDefaults();
+	};
+	
 	// Called when the user selects a new input file.
 	$scope.handleFileSelect = function(event) {
 		$scope.$apply(function($scope) {
 			var f = event.target.files[0];
-			if (f) {
-				var r = new FileReader();
-				r.onload = function(e) {
-					$scope.$apply(function($scope) {
-						try {
-							$scope.input = inputReader.parse(e.target.result);
-							$scope.chartData = $scope.plotInputCharts($scope.input);
-							var SAChartData = $scope.plotInputSAChart($scope.input);
-							if (SAChartData) {
-								$scope.chartData.splice(0,0,SAChartData);
-							}
-							
-							$scope.inputJsonString = JSON.stringify($scope.input, null, 2);
-						} catch (err) {
-							alert("Error: Invalid file format.");
-						}
-					});
-				};
-				r.readAsText(f);
-			}
+			$scope.parseFile(f);
 		});
 	};
 	

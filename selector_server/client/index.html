@@ -27,7 +27,14 @@
 			<p>This is a web-tool for selecting ground motions based on the GCIM method (Bradley, <a href="https://dl.dropboxusercontent.com/u/35408783/webpage/Publications/Journal/2010/Bradley_GCIMholisticGMselection_EESD_2010.pdf">2010</a>, <a href="https://dl.dropboxusercontent.com/u/35408783/webpage/Publications/Journal/2012/Bradley_GCIMconsistentGMselection_SDEE_2012.pdf">2012</a>).</p>
 			<div class="input panel">
 				<p>
-					<b>Select random realizations file (OpenSHA format): <input type="file" id="inputFileSelect" /></b>
+					<b>Select file of random realizations:</b> <input type="file" id="inputFileSelect" />
+					<span ng-show="fileLoading">
+						<img alt="Loading realization file..." src="images/ajax-loader.gif" style="vertical-align: top" />
+					</span>
+					<span ng-show="fileLoaded">
+						<img alt="Realization file loaded." src="images/tick.png" style="vertical-align: top" />
+					</span>
+					<a href="#" class="whatsthis"><sup>(what's this?)</sup></a>
 				</p>
 				<hr />
 				<p>
