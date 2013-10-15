@@ -34,7 +34,7 @@
 					<span ng-show="fileLoaded">
 						<img alt="Realization file loaded." src="images/tick.png" style="vertical-align: top" />
 					</span>
-					<a href="#" class="whatsthis"><sup>(what's this?)</sup></a>
+					<a href="#gcimFileHelp" role="button" data-toggle="modal" class="whatsthis"><sup>(what's this?)</sup></a>
 				</p>
 				<hr />
 				<p>
@@ -193,6 +193,25 @@
 			</span>
       <!-- <pre>{{ inputJsonString }}</pre> -->
     </div>
+		
+		<!-- Help modal for GCIM file -->
+		<div id="gcimFileHelp" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				<h3 id="modalLabel">Random realization file</h3>
+			</div>
+			<div class="modal-body">
+				<p>
+					This file should be a GCIM output file created by OpenSHA.
+				</p>
+				<p>
+					<a href="examples/ExampleOpenSHA_GCIMresults.txt">Click here for an example input file.</a>
+				</p>
+			</div>
+			<div class="modal-footer">
+				<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+			</div>
+		</div>
 		
 		<!-- Credits -->
 		<div class="credits">
