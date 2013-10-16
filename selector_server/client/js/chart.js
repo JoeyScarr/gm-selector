@@ -126,33 +126,6 @@ MOD_chart.directive('chart', ['util', function (util) {
 				
 				/**
 				 * Create and draw a new line-graph.
-				 * 
-				 * Arguments:
-				 *	 containerId => id of container to insert SVG into [REQUIRED]
-				 *	 marginTop => Number of pixels for top margin. [OPTIONAL => Default: 20]
-				 *	 marginRight => Number of pixels for right margin. [OPTIONAL => Default: 20]
-				 *	 marginBottom => Number of pixels for bottom margin. [OPTIONAL => Default: 35]
-				 *	 marginLeft => Number of pixels for left margin. [OPTIONAL => Default: 90]
-				 *	 data => a dictionary containing the following keys [REQUIRED]
-				 *		 values => The data array of arrays to graph. [REQUIRED]
-				 *		 start => The start time in milliseconds since epoch of the data. [REQUIRED]
-				 *		 end => The end time in milliseconds since epoch of the data. [REQUIRED]
-				 *		 step => The time in milliseconds between each data value.	 [REQUIRED]	
-				 *		 names => The metric name for each array of data. [REQUIRED]
-				 *		 displayNames => Display name for each metric. [OPTIONAL => Default: same as 'names' argument]
-				 *				Example: ['MetricA', 'MetricB'] 
-				 *		 colors => What color to use for each metric. [OPTIONAL => Default: black]
-				 *				Example: ['blue', 'red'] to display first metric in blue and second in red.
-				 *		 scale => What scale to display the graph with. [OPTIONAL => Default: linear]
-				 *				Possible Values: linear, pow, log
-				 *		 rounding => How many decimal points to round each metric to. [OPTIONAL => Default: Numbers are rounded to whole numbers (0 decimals)]
-				 *				Example: [2, 1] to display first metric with 2 decimals and second metric with 1. 
-				 *		 numAxisLabelsPowerScale => Hint for how many labels should be displayed for the Y-axis in Power scale. [OPTIONAL => Default: 6]
-				 *		 numAxisLabelsLinearScale  => Hint for how many labels should be displayed for the Y-axis in Linear scale. [OPTIONAL => Default: 6]
-				 *
-				 * Events (fired from container):
-				 *	 LineGraph:dataModification => whenever data is changed
-				 *	 LineGraph:configModification => whenever config is changed
 				 */
 				function LineGraph(argsMap) {
 					/* *************************************************************** */
