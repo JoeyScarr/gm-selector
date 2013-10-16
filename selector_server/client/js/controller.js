@@ -573,5 +573,13 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 		});
 	};
 	
+	$scope.handleChooserClicked = function(event) {
+		$scope.$apply(function($scope) {
+			$scope.fileLoaded = false;
+			$scope.fileLoading = true;
+		})
+	};
+	
 	document.getElementById('inputFileSelect').addEventListener('change', $scope.handleFileSelect);
+	document.getElementById('inputFileSelect').addEventListener('click', $scope.handleChooserClicked);
 }]);
