@@ -272,6 +272,9 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 		var medianLine = [];
 		var line16 = [];
 		var line84 = [];
+		var realizationMedianLine = [];
+		var realizationLine16 = [];
+		var realizationLine84 = [];
 		for (var i = 0; i < data.numIMi; ++i) {
 			var IMi = data.IMi[i];
 			if (IMi.name.substr(0,2) == 'SA') {
@@ -283,12 +286,25 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 				}
 				
 				var period = IMi.period;
+				var realizations = [];
 				// Add points to each realization for this period
 				for (var j = 0; j < data.numIMiRealizations; ++j) {
 					realizationLines[j].push([period, IMi.realizations[j][0]]);
+					realizations.push(IMi.realizations[j][0]);
 				}
 				
-				// Calculate the median and 16th and 84th percentiles.
+				// Calculate the median and 16th and 84th percentiles of the
+				// realizations.
+				realizations.sort(function(a,b){return a-b;});
+				var median = util.median(realizations);
+				var x84 = median * 1.1;
+				var x16 = median * 0.9;
+				realizationMedianLine.push([period, median]);
+				realizationLine16.push([period, x16]);
+				realizationLine84.push([period, x84]);
+				
+				// Calculate the median and 16th and 84th percentiles of the GCIM
+				// distribution.
 				var cdf = $.map(IMi.GCIMvalues, function(val, i) {
 					// Swap the x and y of the CDF for interpolation.
 					return [[val[1], val[0]]];
@@ -309,6 +325,9 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 				idx++;
 			}
 			// Add the conditioning value to all of the lines
+			realizationMedianLine.splice(idx, 0, [period, IML]);
+			realizationLine16.splice(idx, 0, [period, IML]);
+			realizationLine84.splice(idx, 0, [period, IML]);
 			medianLine.splice(idx, 0, [period, IML]);
 			line16.splice(idx, 0, [period, IML]);
 			line84.splice(idx, 0, [period, IML]);
@@ -341,6 +360,35 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 					'showLegend': i == last
 				});
 			}
+			
+			// Add median line for realizations
+			chart.lines.push({
+				'name': 'Realization median',
+				'isDiscrete': true,
+				'data': realizationMedianLine,
+				'width': '2.5px',
+				'color': 'black'
+			});
+			
+			// Add 16th percentile line for realizations
+			chart.lines.push({
+				'name': 'Realization 16th percentile',
+				'isDiscrete': true,
+				'data': realizationLine16,
+				'width': '2.5px',
+				'dasharray': '10,10',
+				'color': 'black'
+			});
+			
+			// Add 84th percentile line for realizations
+			chart.lines.push({
+				'name': 'Realization 84th percentile',
+				'isDiscrete': true,
+				'data': realizationLine84,
+				'width': '2.5px',
+				'dasharray': '10,10',
+				'color': 'black'
+			});
 			
 			// Add median line
 			chart.lines.push({
