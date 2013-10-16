@@ -96,11 +96,11 @@ describe('Util module', function(){
 			expect(util.median([])).toBeNull();
 		}));
 		it('should be able to handle a list with a single item', inject(function(util) {
-			expect(util.median([[0,1]])).toEqual(0);
+			expect(util.median([0])).toEqual(0);
 		}));
 		it('should be able to find medians correctly', inject(function(util) {
-			expect(util.median([[0,1],[1,2]])).toEqual(0.5);
-			expect(util.median([[0,1],[1,1],[2,1]])).toEqual(1);
+			expect(util.median([0,1])).toEqual(0.5);
+			expect(util.median([0,1,2])).toEqual(1);
 		}));
 	});
 	

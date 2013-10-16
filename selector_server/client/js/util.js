@@ -77,7 +77,6 @@ MOD_util.factory('util', function() {
 			}
 			return res;
 		},
-		// NOTE: Requires a list of [a,b] pairs and finds the median of a.
 		median: function(sortedvalues) {
 			if (sortedvalues.length < 1) {
 				error('median() failed! List was empty.')
@@ -85,9 +84,9 @@ MOD_util.factory('util', function() {
 			}
 			var half = Math.floor(sortedvalues.length/2);
 			if(sortedvalues.length % 2) {
-				return sortedvalues[half][0];
+				return sortedvalues[half];
 			} else {
-				return (sortedvalues[half-1][0] + sortedvalues[half][0]) / 2.0;
+				return (sortedvalues[half-1] + sortedvalues[half]) / 2.0;
 			}
 		},
 		binary_search: binary_search,
