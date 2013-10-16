@@ -179,7 +179,8 @@ MOD_chart.directive('chart', ['util', function (util) {
 						if (val.showLegend == null || val.showLegend) {
 							return {
 								name: val.name || "Line " + (i + 1),
-								color: val.color || "red"
+								color: val.color || "red",
+								data: val.data
 							};
 						} else {
 							return null;
@@ -414,15 +415,10 @@ MOD_chart.directive('chart', ['util', function (util) {
 						// persist this reference so we don't do the selector every mouse event
 						hoverContainer = container.querySelector('g .lines');
 						
-						$(container).mouseleave(function(event) {
-							handleMouseOutGraph(event);
-						})
-						
 						$(container).mousemove(function(event) {
 							handleMouseOverGraph(event);
-						})		
-	
-									
+						});
+						
 						// add a line group for each array of values (it will iterate the array of arrays bound to the data function above)
 						svgLinesGroup = svgLines.enter().append("g")
 								.attr("class", function(d, i) {
@@ -765,7 +761,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 					var handleMouseOverGraph = function(event) {
 						var hoverLineXOffset = marginLeft+$(container).offset().left;
 						var hoverLineYOffset = marginTop+$(container).offset().top;
-						var mouseX = event.pageX-hoverLineXOffset;
+						var mouseX = Math.min(w, Math.max(0, event.pageX-hoverLineXOffset));
 						var mouseY = event.pageY-hoverLineYOffset;
 						
 						if(mouseX >= 0 && mouseX <= w && mouseY >= 0 && mouseY <= h) {
@@ -776,9 +772,6 @@ MOD_chart.directive('chart', ['util', function (util) {
 							hoverLine.attr("x1", mouseX).attr("x2", mouseX);
 							
 							displayValueLabelsForPositionX(mouseX);
-						} else {
-							//proactively act as if we've left the area since we're out of the bounds we want
-							handleMouseOutGraph(event);
 						}
 					}
 					
@@ -794,8 +787,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 						}
 						graph.selectAll("text.legend.value")
 						.text(function(d, i) {
-							var valuesForX = getValueForPositionXFromData(xPosition, i);
-							return valuesForX.value;
+							return getValueForPositionXFromData(xPosition, d.data);
 						});
 	
 						// position label values
@@ -820,20 +812,19 @@ MOD_chart.directive('chart', ['util', function (util) {
 					* Convert back from an X position on the graph to a data value from the given array (one of the lines)
 					* Return {value: value, date, date}
 					*/
-					var getValueForPositionXFromData = function(xPosition, dataSeriesIndex) {
-						var d = lines[dataSeriesIndex].data;
+					var getValueForPositionXFromData = function(xPosition, data) {
 						var xValue = x.invert(xPosition);
-						var dlength = !!d ? d.length : 0;//_.size(d);
+						var dlength = !!data ? data.length : 0;//_.size(d);
 						
-						if (xValue >= d[0][0] && xValue <= d[dlength-1][0]) {
+						if (xValue >= data[0][0] && xValue <= data[dlength-1][0]) {
 							for (var m = 1; m < dlength; m++) {
-								if (xValue < d[m][0]) {
-									var temp = ((xValue - d[m-1][0])*(d[m][1] - d[m-1][1])/(d[m][0]-d[m-1][0])+d[m-1][1]);
-									return {value: '('+xValue.toFixed(4)+','+temp.toFixed(4)+')', date: null};
+								if (xValue < data[m][0]) {
+									var temp = ((xValue - data[m-1][0])*(data[m][1] - data[m-1][1])/(data[m][0]-data[m-1][0])+data[m-1][1]);
+									return '('+xValue.toFixed(4)+','+temp.toFixed(4)+')';
 								}
 							}
 						}
-						return {value: "", date: null};
+						return "";
 					}
 	
 					
