@@ -13,6 +13,8 @@ MOD_chart.directive('chart', ['util', function (util) {
 	var SCALE_POWER = 'pow';
 	var LEGEND_TOP = 'top';
 	var LEGEND_BOTTOM = 'bottom';
+	var LEGEND_LEFT = 'left';
+	var LEGEND_RIGHT = 'right';
 
 	return {
 		restrict: 'E',
@@ -97,7 +99,8 @@ MOD_chart.directive('chart', ['util', function (util) {
 							}
 						}
 						
-						var legendPosition = newVal.legendPosition || LEGEND_TOP;
+						var legendPositionX = newVal.legendPositionX || LEGEND_RIGHT;
+						var legendPositionY = newVal.legendPositionY || LEGEND_TOP;
 						var scaleX = newVal.xScale || newVal.scale || SCALE_LINEAR;
 						var scaleY = newVal.yScale || newVal.scale || SCALE_LINEAR;
 						
@@ -112,7 +115,8 @@ MOD_chart.directive('chart', ['util', function (util) {
 							lines: lines,
 							linePoints: linePoints,
 							extraPoints: extraPoints,
-							legendPosition: legendPosition,
+							legendPositionX: legendPositionX,
+							legendPositionY: legendPositionY,
 							scaleX: scaleX,
 							scaleY: scaleY,
 							xAxisLabel: newVal.xAxisLabel,
@@ -154,7 +158,8 @@ MOD_chart.directive('chart', ['util', function (util) {
 					var xScale = argsMap.scaleX;
 					
 					// Legend positioning
-					var legendPosition = argsMap.legendPosition;
+					var legendPositionX = argsMap.legendPositionX;
+					var legendPositionY = argsMap.legendPositionY;
 					
 					// Axis labels
 					var xAxisLabel = util.defaultFor(argsMap.xAxisLabel, 'X Axis');
@@ -532,7 +537,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 					 * Calculates the Y position of the legend entry with the given index.
 					 */
 					var getLegendEntryY = function(i) {
-						if (legendPosition == LEGEND_BOTTOM) {
+						if (legendPositionY == LEGEND_BOTTOM) {
 							return h + marginTop - (legendEntries.length - i) * 20 - 20;
 						} else { // LEGEND_TOP
 							return 20+i*20;
@@ -584,8 +589,12 @@ MOD_chart.directive('chart', ['util', function (util) {
 						var labelNameEnd = [];
 						graph.selectAll("text.legend.name")
 								.attr("x", function(d, i) {
-									return $("#" + containerId).width()-240;
-								})
+									if (legendPositionX == LEGEND_LEFT) {
+										return 150;
+									} else { // LEGEND_RIGHT
+										return $("#" + containerId).width()-240;
+									}
+								});
 					}
 					
 					/**
@@ -843,7 +852,11 @@ MOD_chart.directive('chart', ['util', function (util) {
 						// position label values
 						graph.selectAll("text.legend.value")
 						.attr("x", function(d, i) {
-							return $("#" + containerId).width()-230;	
+							if (legendPositionX == LEGEND_LEFT) {
+								return 160;
+							} else { // LEGEND_RIGHT
+								return $("#" + containerId).width()-230;
+							}
 						});
 					}
 					

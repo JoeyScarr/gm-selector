@@ -226,7 +226,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 				showYAxisScaleButtons: false,
 				xScale: 'log',
 				yScale: 'linear',
-				legendPosition: 'bottom',
+				legendPositionY: 'bottom',
 				lines: [
 					{
 						'name': 'GCIM distribution',
@@ -325,6 +325,8 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 				yAxisLabel: 'Spectral acceleration, SA (g)',
 				xScale: 'log',
 				yScale: 'log',
+				legendPositionX: 'left',
+				legendPositionY: 'bottom',
 				lines: []
 			}
 			var last = realizationLines.length - 1;
@@ -399,7 +401,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 				showYAxisScaleButtons: false,
 				xScale: 'log',
 				yScale: 'linear',
-				legendPosition: 'bottom',
+				legendPositionY: 'bottom',
 				lines: [
 					{
 						'name': 'GCIM distribution',
@@ -488,6 +490,8 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 				yAxisLabel: 'Spectral acceleration, SA (g)',
 				xScale: 'log',
 				yScale: 'log',
+				legendPositionX: 'left',
+				legendPositionY: 'bottom',
 				lines: []
 			}
 			var last = gmLines.length - 1;
