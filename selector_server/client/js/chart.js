@@ -196,11 +196,6 @@ MOD_chart.directive('chart', ['util', function (util) {
 					var transitionDuration = 300;
 					
 					var tickFormatForLogScale = function(d) { return d3.format(",.1e")(d) };
-					
-					// used to track if the user is interacting via mouse/finger instead of trying to determine
-					// by analyzing various element class names to see if they are visible or not
-					var userCurrentlyInteracting = false;
-					var currentUserPositionX = -1;
 						
 					/* *************************************************************** */
 					/* initialization */
@@ -451,9 +446,6 @@ MOD_chart.directive('chart', ['util', function (util) {
 								})
 								.attr("d", function(d, i) {
 									return lineFunction(d.data); // use the 'lineFunction' to create the data points in the correct x,y axis
-								})
-								.on('mouseover', function(d, i) {
-									handleMouseOverLine(d, i);
 								});
 						
 						// add a group of points to display circles on lines
@@ -486,10 +478,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 						svgLinesGroupText.attr("class", function(d, i) {
 								return "line_label series_" + i;
 							})
-							.text(function(d, i) {
-									return "";
-								});
-						
+							.text("");
 						
 						// add a 'hover' line that we'll show as a user moves their mouse (or finger)
 						// so we can use it to show detailed values of each line
@@ -769,14 +758,6 @@ MOD_chart.directive('chart', ['util', function (util) {
 								.attr("x", w)
 								.text(date.toDateString() + " " + date.toLocaleTimeString())
 					};
-					
-					/**
-					 * Called when a user mouses over a line.
-					 */
-					var handleMouseOverLine = function(lineData, index) {
-						// user is interacting
-						userCurrentlyInteracting = true;
-					}
 	
 					/**
 					 * Called when a user mouses over the graph.
@@ -792,38 +773,12 @@ MOD_chart.directive('chart', ['util', function (util) {
 							hoverLine.classed("hide", false);
 	
 							//set position of hoverLine
-							hoverLine.attr("x1", mouseX).attr("x2", mouseX)
+							hoverLine.attr("x1", mouseX).attr("x2", mouseX);
 							
-							displayValueLabelsForPositionX(mouseX)
-							
-							//user is interacting
-							userCurrentlyInteracting = true;
-							currentUserPositionX = mouseX;
+							displayValueLabelsForPositionX(mouseX);
 						} else {
 							//proactively act as if we've left the area since we're out of the bounds we want
-							handleMouseOutGraph(event)
-						}
-					}
-					
-					
-					var handleMouseOutGraph = function(event) {	
-						//user is no longer interacting
-						userCurrentlyInteracting = false;
-						currentUserPositionX = -1;
-					}
-					
-					/*
-					* Handler for when data is updated.
-					*/
-					var handleDataUpdate = function() {
-						if(userCurrentlyInteracting) {
-							// user is interacting, so let's update values to wherever the mouse/finger is on the updated data
-							if(currentUserPositionX > -1) {
-								displayValueLabelsForPositionX(currentUserPositionX)
-							}
-						} else {
-							// the user is not interacting with the graph, so we'll update the labels to the latest
-							setValueLabelsToLatest();
+							handleMouseOutGraph(event);
 						}
 					}
 					
@@ -837,17 +792,11 @@ MOD_chart.directive('chart', ['util', function (util) {
 								animate = true;
 							}
 						}
-						var dateToShow;
-						var labelValueWidths = [];
 						graph.selectAll("text.legend.value")
 						.text(function(d, i) {
 							var valuesForX = getValueForPositionXFromData(xPosition, i);
-							dateToShow = valuesForX.date;
 							return valuesForX.value;
-						})
-						.attr("x", function(d, i) {
-							labelValueWidths[i] = this.getComputedTextLength(); 
-						})
+						});
 	
 						// position label values
 						graph.selectAll("text.legend.value")
