@@ -115,7 +115,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 			}, $scope.Ngms, $scope.Nreplicates, $scope.repeatability);
 		$scope.selectionOutputString = $scope.formatOutput($scope.selectionOutput);
 		$scope.outputChartData = $scope.plotOutputCharts($scope.selectionOutput);
-		var SAChartData = $scope.plotOutputSAChart($scope.selectionOutput);
+		var SAChartData = $scope.plotOutputSAChart($scope.selectionOutput, $scope.input);
 		if (SAChartData) {
 			$scope.outputChartData.splice(0,0,SAChartData);
 		}
@@ -448,7 +448,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 	};
 	
 	// Generates a plot of Spectral Acceleration against period, T (if SA data is present).
-	$scope.plotOutputSAChart = function(data) {
+	$scope.plotOutputSAChart = function(data, inputData) {
 		var chart = null;
 		var gmLines = [];
 		var medianLine = [];
@@ -479,6 +479,24 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 				medianLine.push([period, util.interp_array(cdf, 0.5)]);
 				line16.push([period, util.interp_array(cdf, 0.16)]);
 				line84.push([period, util.interp_array(cdf, 0.84)]);
+			}
+		}
+		
+		// Add in the conditioning IM if it was an SA value
+		if (inputData.IMjName.substr(0,2) == 'SA') {
+			var period = inputData.IMjPeriod;
+			var IML = inputData.IML;
+			// Find appropriate location to insert
+			var idx = 0;
+			while (period > medianLine[idx][0]) {
+				idx++;
+			}
+			// Add the conditioning value to all of the lines
+			medianLine.splice(idx, 0, [period, IML]);
+			line16.splice(idx, 0, [period, IML]);
+			line84.splice(idx, 0, [period, IML]);
+			for (var j = 0; j < data.selectedGroundMotions.length; ++j) {
+				gmLines[j].splice(idx, 0, [period, IML]);
 			}
 		}
 		
