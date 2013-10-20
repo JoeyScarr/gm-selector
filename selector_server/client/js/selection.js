@@ -116,6 +116,7 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 		selectGroundMotions: function(GCIMdata, database, debugOutputFunc,
 																	Ngms, Nreplicates, repeatability, alpha) {
 			// Parameter default values
+			debugOutputFunc = util.defaultFor(debugOutputFunc, function(){});
 			Ngms = util.defaultFor(Ngms, 30);
 			Nreplicates = Math.max(1, util.defaultFor(Nreplicates, 1));
 			repeatability = util.defaultFor(repeatability, true);

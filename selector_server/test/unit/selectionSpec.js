@@ -195,7 +195,7 @@ describe('Selection module', function(){
 				spyOn(util, 'sample').andCallFake(function(name, callback) {
 					return [23,91,30,7,41,20,98,90,24,54,84,14,49,50,26,29,93,38,25,1,87,86,28,96,67,94,52,48,71,68];
 				});
-				var output = gmSelector.selectGroundMotions(OpenSHAresults, data, function(){});
+				var output = gmSelector.selectGroundMotions(OpenSHAresults, data);
 				// Expect one call to util.sample
 				expect(util.sample.calls.length).toEqual(1);
 				// Make sure the global residual, R is correct
