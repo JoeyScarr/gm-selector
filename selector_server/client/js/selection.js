@@ -213,6 +213,7 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 			debugOutputFunc(JSON.stringify(selectedGMIDs));
 			
 			var output = {
+				simulatedRealizationsUsed: replicateIndex[minRIndex],
 				selectedGroundMotions: selectedGroundMotionReplicateIndex[minRIndex],
 				R: minR,
 				ksCriticalValue: util.ks_critical_value(Ngms, alpha),

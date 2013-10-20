@@ -442,6 +442,14 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 			// Build a CDF from the values.
 			var selectedCDF = util.build_cdf(values);
 			
+			// Get the simulated values that were used.
+			var simulatedRealizations = $.map(data.simulatedRealizationsUsed, function(val, i) {
+				return IMi.realizations[val][0];
+			});
+			
+			// Build a CDF from those values.
+			var simulatedCDF = util.build_cdf(simulatedRealizations);
+			
 			var chart = {
 				name: IMi.name,
 				xAxisLabel: IMi.name,
@@ -461,7 +469,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 					{
 						'name': 'Realized GCIM values',
 						'isDiscrete': true,
-						'data': IMi.realizationCDF,
+						'data': simulatedCDF,
 						'color': 'blue',
 						'width': '1.5px'
 					},
