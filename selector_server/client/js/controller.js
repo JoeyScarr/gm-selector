@@ -297,8 +297,8 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 				// realizations.
 				realizations.sort(function(a,b){return a-b;});
 				var median = util.median(realizations);
-				var x84 = median * 1.1;
-				var x16 = median * 0.9;
+				var x84 = util.percentile(realizations, 84);
+				var x16 = util.percentile(realizations, 16);
 				realizationMedianLine.push([period, median]);
 				realizationLine16.push([period, x16]);
 				realizationLine84.push([period, x84]);
