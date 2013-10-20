@@ -104,6 +104,30 @@ describe('Util module', function(){
 		}));
 	});
 	
+	describe('percentile', function() {
+		it('should return null for an empty list', inject(function(util) {
+			expect(util.percentile([], 0.5)).toBeNull();
+		}));
+		it('should return null for an incorrect percentile', inject(function(util) {
+			expect(util.percentile([1,2,3,4], -0.1)).toBeNull();
+			expect(util.percentile([1,2,3,4], 101)).toBeNull();
+		}));
+		it('should be able to handle a list with a single item', inject(function(util) {
+			expect(util.percentile([0], 0)).toEqual(0);
+			expect(util.percentile([0], 1)).toEqual(0);
+		}));
+		it('should be able to find medians of small lists', inject(function(util) {
+			expect(util.percentile([0,1], 0.5)).toEqual(0.5);
+			expect(util.percentile([0,1,2], 0.5)).toEqual(1);
+		}));
+		it('should be able to find 16th and 84th percentiles', inject(function(util) {
+			expect(util.percentile([0,1,2,3,4,5,6,7,8,9,10], 0.16)).toEqual(1.6);
+			expect(util.percentile([0,1,2,3,4,5,6,7,8,9,10], 16)).toEqual(1.6);
+			expect(util.percentile([0,1,2,3,4,5,6,7,8,9,10], 0.84)).toEqual(8.4);
+			expect(util.percentile([0,1,2,3,4,5,6,7,8,9,10], 84)).toEqual(8.4);
+		}));
+	});
+	
 	describe('sample', function() {
 		it('should return a list of the given size', inject(function(util) {
 			expect(util.sample(0, 0).length).toEqual(0);

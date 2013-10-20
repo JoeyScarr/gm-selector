@@ -89,6 +89,29 @@ MOD_util.factory('util', function() {
 				return (sortedvalues[half-1] + sortedvalues[half]) / 2.0;
 			}
 		},
+		percentile: function(sortedvalues, percentile) {
+			var len = sortedvalues.length;
+			if (len < 1) {
+				error('percentile() failed! List was empty.')
+				return null;
+			}
+			// Accept both percentiles expressed in ones (84%) or hundredths (0.84)
+			if (percentile > 1 && percentile <= 100) {
+				percentile /= 100;
+			}
+			if (percentile > 1 || percentile < 0) {
+				error('percentile() failed! Specified percentile (' + percentile + ') was invalid.')
+				return null;
+			}
+			var pos = (len - 1) * percentile;
+			var idx = Math.floor(pos);
+			var fract = pos - idx;
+			if (idx >= len - 1) {
+				return sortedvalues[len - 1];
+			} else {
+				return interp(sortedvalues[idx], sortedvalues[idx+1], fract);
+			}
+		},
 		binary_search: binary_search,
 		interpolate: interp,
 		interp_array: interp_array,
