@@ -492,7 +492,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 						
 						createXScaleButtons();
 						createYScaleButtons();
-						createDateLabel();
+						createExportButton();
 						createLegend();
 						createXAxisLabel();
 						createYAxisLabel();
@@ -739,20 +739,26 @@ MOD_chart.directive('chart', ['util', function (util) {
 					};
 					
 					/**
-					 * Create a data label
+					 * Create the link to export the chart data
 					 */
-					var createDateLabel = function() {
-						var date = new Date(); // placeholder just so we can calculate a valid width
-						// create the date label to the left of the scaleButtons group
+					var createExportButton = function() {
 						var buttonGroup = graph.append("svg:g")
-							.attr("class", "date-label-group")
-							.append("svg:text")
-								.attr("class", "date-label")
-								.attr("text-anchor", "end") // set at end so we can position at far right edge and add text from right to left
-								.attr("font-size", "10") 
-								.attr("y", -4)
-								.attr("x", w)
-								.text(date.toDateString() + " " + date.toLocaleTimeString())
+							.attr("class", "export-button-group");
+						var link = buttonGroup.append("a")
+							.attr("xlink:href", "#")
+							.attr("class", "export-button");
+						link.append("svg:text")
+							.attr("text-anchor", "end")
+							.attr("y", -4)
+							.attr("x", w-16) // set at end so we can position at far right edge and add text from right to left
+							.attr("font-size", "12")
+							.text("Export data");
+						link.append("svg:image")
+							.attr("xlink:href", "/images/export_16.png")
+							.attr("height","16px")
+							.attr("width","16px")
+							.attr("y", -16)
+							.attr("x", w-16);
 					};
 	
 					/**
@@ -809,12 +815,11 @@ MOD_chart.directive('chart', ['util', function (util) {
 					}
 					
 					/**
-					* Convert back from an X position on the graph to a data value from the given array (one of the lines)
-					* Return {value: value, date, date}
+					* Convert back from an X position on the graph to a data value from the given array (one of the lines).
 					*/
 					var getValueForPositionXFromData = function(xPosition, data) {
 						var xValue = x.invert(xPosition);
-						var dlength = !!data ? data.length : 0;//_.size(d);
+						var dlength = !!data ? data.length : 0;
 						
 						if (xValue >= data[0][0] && xValue <= data[dlength-1][0]) {
 							for (var m = 1; m < dlength; m++) {

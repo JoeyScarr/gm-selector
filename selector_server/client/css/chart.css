@@ -55,17 +55,11 @@
 	svg.line-graph .x.axis path {
 		display: none;
 	}
-				
+	
 	svg.line-graph .x.axis text {
 		font-size: 12px;
 	}
-
-	/*
-	svg.line-graph .y.axis line, .y.axis path {
-		fill: none;
-		stroke: #000;
-	}*/
-				
+	
 	svg.line-graph .y.axis text {
 		font-size: 12px;
 	}
@@ -79,10 +73,19 @@
 		cursor: pointer !important;
 	}
 	
-	svg.line-graph .date-label {
-		fill: #6E7B8B;
+	svg.line-graph .export-button {
+		fill:blue;
+	}
+	
+	svg.line-graph .export-button:hover {
+		text-decoration: underline;
+		cursor: pointer !important;
 	}
 
+	svg.line-graph .export-button:hover text {
+		cursor: pointer !important;
+	}
+	
 	svg.line-graph .properties-button {
 		fill:blue;
 	}
