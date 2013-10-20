@@ -112,7 +112,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 		$scope.selectionOutput = gmSelector.selectGroundMotions($scope.input, $scope.databaseData,
 			function(output) {
 				$scope.debugOutput += output + '\n';
-			}, $scope.Ngms, $scope.Nreplicates, $scope.repeatability);
+			}, $scope.Ngms, $scope.Nreplicates, $scope.repeatability, $scope.alpha);
 		$scope.selectionOutputString = $scope.formatOutput($scope.selectionOutput);
 		$scope.outputChartData = $scope.plotOutputCharts($scope.selectionOutput);
 		var SAChartData = $scope.plotOutputSAChart($scope.selectionOutput, $scope.input);
@@ -429,7 +429,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 			var IMi = data.IMi[i];
 			
 			// Calculate KS bounds.
-			var ksCriticalValue = util.ks_critical_value(IMi.realizations.length, $scope.alpha);
+			var ksCriticalValue = util.ks_critical_value(data.selectedGroundMotions.length, $scope.alpha);
 			var ksBounds = getKSbounds(IMi.GCIMvalues, ksCriticalValue);
 			
 			// Get selected ground motion values for this IM.
