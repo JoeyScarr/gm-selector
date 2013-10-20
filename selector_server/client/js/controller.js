@@ -502,6 +502,9 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 		var medianLine = [];
 		var line16 = [];
 		var line84 = [];
+		var selectedGmMedianLine = [];
+		var selectedGmLine16 = [];
+		var selectedGmLine84 = [];
 		for (var i = 0; i < data.IMi.length; ++i) {
 			var IMi = data.IMi[i];
 			if (IMi.name.substr(0,2) == 'SA') {
@@ -513,13 +516,26 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 				}
 				
 				var period = IMi.period;
+				var selectedGms = [];
 				// Add points to each ground motion line for this period
 				for (var j = 0; j < data.selectedGroundMotions.length; ++j) {
 					var gm = data.selectedGroundMotions[j];
 					gmLines[j].push([period, gm.scaledIM[IMi.name]]);
+					selectedGms.push(gm.scaledIM[IMi.name]);
 				}
 				
-				// Calculate the median and 16th and 84th percentiles.
+				// Calculate the median and 16th and 84th percentiles of the
+				// selected GMs.
+				selectedGms.sort(function(a,b){return a-b;});
+				var median = util.median(selectedGms);
+				var x84 = util.percentile(selectedGms, 84);
+				var x16 = util.percentile(selectedGms, 16);
+				selectedGmMedianLine.push([period, median]);
+				selectedGmLine16.push([period, x16]);
+				selectedGmLine84.push([period, x84]);
+				
+				// Calculate the median and 16th and 84th percentiles of the GCIM
+				// distribution.
 				var cdf = $.map(IMi.GCIMvalues, function(val, i) {
 					// Swap the x and y of the CDF for interpolation.
 					return [[val[1], val[0]]];
@@ -563,7 +579,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 			var last = gmLines.length - 1;
 			for (var i = 0; i < gmLines.length; ++i) {
 				chart.lines.push({
-					'name': 'Single Realization',
+					'name': 'Single Selected GM',
 					'isDiscrete': true,
 					'drawCircles': i == last,
 					'data': gmLines[i],
@@ -572,6 +588,35 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 					'showLegend': i == last
 				});
 			}
+			
+			// Add median line for selected GMs
+			chart.lines.push({
+				'name': 'GM median',
+				'isDiscrete': true,
+				'data': selectedGmMedianLine,
+				'width': '2.5px',
+				'color': 'black'
+			});
+			
+			// Add 16th percentile line for selected GMs
+			chart.lines.push({
+				'name': 'GM 16th percentile',
+				'isDiscrete': true,
+				'data': selectedGmLine16,
+				'width': '2.5px',
+				'dasharray': '10,10',
+				'color': 'black'
+			});
+			
+			// Add 84th percentile line for selected GMs
+			chart.lines.push({
+				'name': 'GM 84th percentile',
+				'isDiscrete': true,
+				'data': selectedGmLine84,
+				'width': '2.5px',
+				'dasharray': '10,10',
+				'color': 'black'
+			});
 			
 			// Add median line
 			chart.lines.push({
