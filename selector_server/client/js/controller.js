@@ -145,10 +145,10 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 		outputString += 'The selected set of ground motions has a total residual of R=sum(wi*KS^2)=' + output.R.toFixed(6) + '\n\n';
 		
 		outputString += 'Ground motions selected and amplitude scale factors:\n'
-		outputString += sprintf('%10s %-13s %14s  %10s %12s %12s %12s %12s\n', 'GM', 'DatabaseName', 'GroundMotionID', 'ScaleFactor', 'Mw', 'Rrup', 'Vs30', 'fmin');
+		outputString += sprintf('%10s %-13s %14s  %11s %12s %12s %12s %12s\n', 'GM', 'DatabaseName', 'GroundMotionID', 'ScaleFactor', 'Mw', 'Rrup', 'Vs30', 'fmin');
 		for (var i = 0; i < output.selectedGroundMotions.length; ++i) {
 			var gm = output.selectedGroundMotions[i];
-			outputString += sprintf('%10d %-13s %14d  %10.6f %12.2f %12.2f %12.2f %12.2f\n', i + 1, gm.DatabaseName, gm.GMID, gm.scaleFactor, gm.Mw, gm.Rrup, gm.Vs30, gm.freqMin);
+			outputString += sprintf('%10d %-13s %14d  %11.6f %12.2f %12.2f %12.2f %12.2f\n', i + 1, gm.DatabaseName, gm.GMID, gm.scaleFactor, gm.Mw, gm.Rrup, gm.Vs30, gm.freqMin);
 		}
 		outputString += '\n';
 		
