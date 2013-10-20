@@ -745,7 +745,8 @@ MOD_chart.directive('chart', ['util', function (util) {
 						var buttonGroup = graph.append("svg:g")
 							.attr("class", "export-button-group");
 						var link = buttonGroup.append("a")
-							.attr("xlink:href", "#")
+							.attr("xlink:href", "data:text/plain;charset=utf-8," + encodeURIComponent(generateChartDataFile()))
+							.attr("target","_blank")
 							.attr("class", "export-button");
 						link.append("svg:text")
 							.attr("text-anchor", "end")
@@ -779,7 +780,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 							
 							displayValueLabelsForPositionX(mouseX);
 						}
-					}
+					};
 					
 					/**
 					* Display the data values at position X in the legend value labels.
@@ -805,14 +806,14 @@ MOD_chart.directive('chart', ['util', function (util) {
 								return $("#" + containerId).width()-230;
 							}
 						});
-					}
+					};
 					
 					/**
 					* Set the value labels to whatever the latest data point is.
 					*/
 					var setValueLabelsToLatest = function(withTransition) {
 						displayValueLabelsForPositionX(w, withTransition);
-					}
+					};
 					
 					/**
 					* Convert back from an X position on the graph to a data value from the given array (one of the lines).
@@ -830,7 +831,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 							}
 						}
 						return "";
-					}
+					};
 	
 					
 					/**
@@ -838,7 +839,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 					 */
 					var handleWindowResizeEvent = function() {
 						initDimensions();
-					}
+					};
 	
 					/**
 					 * Set height/width dimensions based on container.
@@ -846,37 +847,26 @@ MOD_chart.directive('chart', ['util', function (util) {
 					var initDimensions = function() {
 						w = parseInt(width) - marginLeft - marginRight; // width
 						h = parseInt(height) - marginTop - marginBottom; // height
-					}
+					};
 					
 					/**
-					* Return the value from argsMap for key or throw error if no value found
-					*/	  
-					var getRequiredVar = function(argsMap, key, message) {
-						if(!argsMap[key]) {
-							if(!message) {
-								throw new Error(key + " is required")
-							} else {
-								throw new Error(message)
+					 * Generates a downloadable file containing the chart line data
+					 * in space-separated format.
+					 */
+					var generateChartDataFile = function() {
+						var result = '';
+						for (var i = 0; i < lines.length; ++i) {
+							var line = lines[i];
+							if (line.isDiscrete) {
+								result += line.name + '\n\n';
+								for (var j = 0; j < line.data.length; ++j) {
+									result += sprintf('%10.6f %10.6f\n', line.data[j][0], line.data[j][1]);
+								}
+								result += '\n\n';
 							}
-						} else {
-							return argsMap[key]
 						}
-					}
-					
-					/**
-					* Return the value from argsMap for key or defaultValue if no value found
-					*/
-					var getOptionalVar = function(argsMap, key, defaultValue) {
-						if(!argsMap[key]) {
-							return defaultValue
-						} else {
-							return argsMap[key]
-						}
-					}
-					
-					var error = function(message) {
-						console.log("ERROR: " + message)
-					}
+						return result;
+					};
 					
 					_init();
 				};
