@@ -868,6 +868,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 					 */
 					var generateChartDataFile = function() {
 						var result = '';
+						// Print out line data
 						for (var i = 0; i < lines.length; ++i) {
 							var line = lines[i];
 							if (line.isDiscrete) {
@@ -876,6 +877,13 @@ MOD_chart.directive('chart', ['util', function (util) {
 									result += sprintf('%10.6f %10.6f\n', line.data[j][0], line.data[j][1]);
 								}
 								result += '\n\n';
+							}
+						}
+						if (extraPoints.length > 0) {
+							// Print out extra point data
+							result += 'Point data\n\n';
+							for (var i = 0; i < extraPoints.length; ++i) {
+								result += sprintf('%10.6f %10.6f\n', extraPoints[i].x, extraPoints[i].y);
 							}
 						}
 						return result;
