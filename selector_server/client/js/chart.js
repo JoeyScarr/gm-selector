@@ -36,8 +36,9 @@ MOD_chart.directive('chart', ['util', function (util) {
 				scope.$watch('data', function (newVal, oldVal) {
 					$('#' + id).empty();
 					
-					if (!!newVal && !!newVal.lines && newVal.lines.length > 0) {
-						var lines = newVal.lines;
+					if (!!newVal && (!!newVal.lines && newVal.lines.length > 0)
+							|| (!!newVal.extraPoints && newVal.extraPoints.length > 0)) {
+						var lines = newVal.lines || [];
 						var extraPoints = newVal.extraPoints || [];
 						var linePoints = [];
 						
@@ -97,6 +98,13 @@ MOD_chart.directive('chart', ['util', function (util) {
 								xmax = Math.max(xmax, line.limits.xmax);
 								ymax = Math.max(ymax, line.limits.ymax);
 							}
+						}
+						for (var i = 0; i < extraPoints.length; ++i) {
+							var point = extraPoints[i];
+							xmin = Math.min(xmin, point.x);
+							ymin = Math.min(ymin, point.y);
+							xmax = Math.max(xmax, point.x);
+							ymax = Math.max(ymax, point.y);
 						}
 						
 						var legendPositionX = newVal.legendPositionX || LEGEND_RIGHT;

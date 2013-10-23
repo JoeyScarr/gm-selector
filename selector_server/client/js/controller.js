@@ -123,6 +123,10 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 		if (scaleFactorChartData) {
 			$scope.outputChartData.push(scaleFactorChartData);
 		}
+		var magnitudeDistanceChartData = $scope.plotMagnitudeDistanceChart($scope.selectionOutput);
+		if (magnitudeDistanceChartData) {
+			$scope.outputChartData.push(magnitudeDistanceChartData);
+		}
 	};
 	
 	$scope.formatOutput = function(output) {
@@ -748,6 +752,34 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 					'width': '1.5px'
 				}
 			]
+		}
+		return chart;
+	};
+	
+	$scope.plotMagnitudeDistanceChart = function(data) {
+		// Get magnitude and distance from the selected ground motions.
+		var values = [];
+		for (var j = 0; j < data.selectedGroundMotions.length; ++j) {
+			var gm = data.selectedGroundMotions[j];
+			values.push([gm.Rrup, gm.Mw]);
+		}
+		
+		var chart = {
+			name: 'Magnitude-distance distribution',
+			xAxisLabel: 'Distance, Rrup (km)',
+			yAxisLabel: 'Magnitude, Mw',
+			showYAxisScaleButtons: false,
+			xScale: 'log',
+			yScale: 'linear',
+			legendPositionY: 'bottom',
+			extraPoints: $.map(values, function(val, i) {
+				return {
+					x: val[0],
+					y: val[1],
+					color: 'blue',
+					width: '2px'
+				};
+			})
 		}
 		return chart;
 	};
