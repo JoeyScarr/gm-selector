@@ -56,7 +56,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 						}
 						
 						// For lines that have circles shown, add their points to the
-						// extraPoints array.
+						// linePoints array.
 						for (var i = 0; i < lines.length; ++i) {
 							var line = lines[i];
 							if (line.drawCircles) {
@@ -394,7 +394,9 @@ MOD_chart.directive('chart', ['util', function (util) {
 							.data(extraPoints) // bind the array of arrays
 							.enter().append("svg:circle")
 							.attr("class", "dot")
-							.attr("r", 3.5)
+							.attr("r", function(d, i) {
+								return d.radius || 3.5;
+							})
 							.attr("cx", function(d) {
 								return x(d.x);
 							})
@@ -404,6 +406,9 @@ MOD_chart.directive('chart', ['util', function (util) {
 							.attr("fill", "transparent")
 							.attr("stroke", function(d, i) {
 								return d.color || "gray";
+							})
+							.attr("stroke-width", function(d, i) {
+								return d.width || '1.0px';
 							});
 	
 						// append a group to contain all lines

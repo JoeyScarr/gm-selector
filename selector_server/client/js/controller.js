@@ -219,6 +219,16 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 			var ksCriticalValue = util.ks_critical_value(data.numIMiRealizations, $scope.alpha);
 			var ksBounds = getKSbounds(IMi.GCIMvalues, ksCriticalValue);
 			
+			// Iterate through CDF to find a single realization to highlight.
+			var singleX = IMi.realizations[data.numIMiRealizations-1][0];
+			var singleY = null;
+			for (var j = IMi.realizationCDF.length-1; j >= 0; --j) {
+				if (IMi.realizationCDF[j][0] == singleX) {
+					singleY = IMi.realizationCDF[j][1];
+					break;
+				}
+			}
+			
 			var chart = {
 				name: IMi.name,
 				xAxisLabel: IMi.name,
@@ -257,6 +267,16 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 						'color': 'red',
 						'dasharray': '10,10',
 						'width': '1.5px'
+					}
+				],
+				extraPoints: [
+					// Show a single realization.
+					{
+						x: singleX,
+						y: singleY,
+						color: 'blue',
+						width: '2px',
+						radius: '4px'
 					}
 				]
 			}
@@ -450,6 +470,25 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 			// Build a CDF from those values.
 			var simulatedCDF = util.build_cdf(simulatedRealizations);
 			
+			// Iterate through the two CDFs to find a single realization
+			// and its corresponding selected GM to highlight.
+			var singleRealizedX = simulatedRealizations[0];
+			var singleRealizedY = null;
+			var singleSelectedX = values[0];
+			var singleSelectedY = null;
+			for (var j = simulatedCDF.length-1; j >= 0; --j) {
+				if (simulatedCDF[j][0] == singleRealizedX) {
+					singleRealizedY = simulatedCDF[j][1];
+					break;
+				}
+			}
+			for (var j = selectedCDF.length-1; j >= 0; --j) {
+				if (selectedCDF[j][0] == singleSelectedX) {
+					singleSelectedY = selectedCDF[j][1];
+					break;
+				}
+			}
+			
 			var chart = {
 				name: IMi.name,
 				xAxisLabel: IMi.name,
@@ -495,6 +534,24 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 						'color': 'red',
 						'dasharray': '10,10',
 						'width': '1.5px'
+					}
+				],
+				extraPoints: [
+					// Show a single realization.
+					{
+						x: singleRealizedX,
+						y: singleRealizedY,
+						color: 'blue',
+						width: '2px',
+						radius: '4px'
+					},
+					// Show a single selected GM.
+					{
+						x: singleSelectedX,
+						y: singleSelectedY,
+						color: 'gray',
+						width: '2px',
+						radius: '4px'
 					}
 				]
 			}
