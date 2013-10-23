@@ -119,6 +119,10 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 		if (SAChartData) {
 			$scope.outputChartData.splice(0,0,SAChartData);
 		}
+		var scaleFactorChartData = $scope.plotScaleFactorChart($scope.selectionOutput);
+		if (scaleFactorChartData) {
+			$scope.outputChartData.push(scaleFactorChartData);
+		}
 	};
 	
 	$scope.formatOutput = function(output) {
@@ -713,6 +717,38 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 			});
 		}
 		
+		return chart;
+	};
+	
+	$scope.plotScaleFactorChart = function(data) {
+		// Get scale factors from the selected ground motions.
+		var values = [];
+		for (var j = 0; j < data.selectedGroundMotions.length; ++j) {
+			var gm = data.selectedGroundMotions[j];
+			values.push(gm.scaleFactor);
+		}
+		
+		// Build a CDF from the values.
+		var scaleFactorCDF = util.build_cdf(values);
+		
+		var chart = {
+			name: 'Scale factors',
+			xAxisLabel: 'Amplitude scale factor, SF',
+			yAxisLabel: 'Cumulative Probability, CDF',
+			showYAxisScaleButtons: false,
+			xScale: 'log',
+			yScale: 'linear',
+			legendPositionY: 'bottom',
+			lines: [
+				{
+					'name': 'Selected GM scale factors',
+					'isDiscrete': true,
+					'data': scaleFactorCDF,
+					'color': 'red',
+					'width': '1.5px'
+				}
+			]
+		}
 		return chart;
 	};
 	
