@@ -632,6 +632,9 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 			medianLine.splice(idx, 0, [period, IML]);
 			line16.splice(idx, 0, [period, IML]);
 			line84.splice(idx, 0, [period, IML]);
+			selectedGmMedianLine.splice(idx, 0, [period, IML]);
+			selectedGmLine16.splice(idx, 0, [period, IML]);
+			selectedGmLine84.splice(idx, 0, [period, IML]);
 			for (var j = 0; j < data.selectedGroundMotions.length; ++j) {
 				gmLines[j].splice(idx, 0, [period, IML]);
 			}
