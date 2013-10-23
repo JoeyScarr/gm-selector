@@ -776,7 +776,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 				return {
 					x: val[0],
 					y: val[1],
-					color: 'blue',
+					color: 'red',
 					width: '2px'
 				};
 			})
