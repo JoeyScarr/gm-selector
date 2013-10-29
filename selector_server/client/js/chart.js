@@ -1,7 +1,7 @@
 "use strict";
 
 // Declares the chart module, which draws charts.
-var MOD_chart = angular.module('chart', []);
+var MOD_chart = angular.module('chart', ['util']);
 
 // TODO: Document the input format for the chart directive here.
 
@@ -32,7 +32,8 @@ MOD_chart.directive('chart', ['util', function (util) {
 			
 			return function link(scope, element, attrs) {
 				var id = scope.id || 'mychart';
-				element[0].id = scope.id;
+				var container = element[0];
+				container.id = id;
 				scope.$watch('data', function (newVal, oldVal) {
 					$('#' + id).empty();
 					
@@ -114,6 +115,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 						
 						var argsMap = {
 							containerId: id,
+							container: container,
 							limits: {
 								xmin: xmin,
 								xmax: xmax,
@@ -150,7 +152,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 					/* *************************************************************** */
 					// the div we insert the graph into
 					var containerId = argsMap.containerId;
-					var container = document.querySelector('#' + containerId);
+					var container = argsMap.container;
 					
 					// functions we use to display and interact with the graphs and lines
 					var graph, x, yLeft, xAxis, yAxisLeft, yAxisLeftDomainStart;
@@ -204,7 +206,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 					
 					var transitionDuration = 300;
 					
-					var tickFormatForLogScale = function(d) { return d3.format(",.1e")(d) };
+					var tickFormatForLogScale = ",.1e";
 						
 					/* *************************************************************** */
 					/* initialization */
@@ -235,23 +237,23 @@ MOD_chart.directive('chart', ['util', function (util) {
 						if(withTransition) {
 							// slide x-axis to updated location
 							graph.selectAll("g .x.axis").transition()
-							.duration(transitionDuration)
-							.ease("linear")
-							.call(xAxis)				  
-						
+								.duration(transitionDuration)
+								.ease("linear")
+								.call(xAxis);
+							
 							// slide y-axis to updated location
 							graph.selectAll("g .y.axis.left").transition()
-							.duration(transitionDuration)
-							.ease("linear")
-							.call(yAxisLeft)
+								.duration(transitionDuration)
+								.ease("linear")
+								.call(yAxisLeft);
 						} else {
 							// slide x-axis to updated location
 							graph.selectAll("g .x.axis")
-							.call(xAxis)				  
+								.call(xAxis);
 						
 							// slide y-axis to updated location
 							graph.selectAll("g .y.axis.left")
-							.call(yAxisLeft)
+								.call(yAxisLeft);
 						}
 					};
 					
@@ -259,13 +261,13 @@ MOD_chart.directive('chart', ['util', function (util) {
 						// redraw lines
 						if(withTransition) {
 							graph.selectAll("g .lines path")
-							.transition()
-								.duration(transitionDuration)
-								.ease("linear")
-								.attr("d", function(d, i) {
-									return lineFunction(d.data);
-								})
-								.attr("transform", null);
+								.transition()
+									.duration(transitionDuration)
+									.ease("linear")
+									.attr("d", function(d, i) {
+										return lineFunction(d.data);
+									})
+									.attr("transform", null);
 								
 							graph.selectAll("g .lines .dot")
 								.transition()
@@ -361,7 +363,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 					var createGraph = function() {
 						
 						// Add an SVG element with the desired dimensions and margin.
-						graph = d3.select("#" + containerId).append("svg:svg")
+						graph = d3.select(container).append("svg:svg")
 								.attr("class", "line-graph")
 								.attr("width", w + marginLeft + marginRight)
 								.attr("height", h + marginTop + marginBottom)
@@ -515,6 +517,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 					var createXAxisLabel = function() {
 						var xAxisTitle = graph.append("svg:text")
 							.text(xAxisLabel)
+							.attr("class", "x-axis-label")
 							.attr("style", "text-anchor:middle")
 							.attr("font-weight", "bold")
 							.attr("x", w/2)
@@ -524,6 +527,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 					var createYAxisLabel = function() {
 						var yAxisTitle = graph.append("svg:text")
 							.text(yAxisLabel)
+							.attr("class", "y-axis-label")
 							.attr("style", "text-anchor:middle")
 							.attr("transform", "rotate(270)")
 							.attr("font-weight", "bold")
