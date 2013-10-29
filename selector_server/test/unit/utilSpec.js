@@ -1,6 +1,8 @@
 'use strict';
 
-/* jasmine specs for the util module go here */
+/**
+ * Tests for the util module.
+ */
 
 describe('Util module', function(){
 	beforeEach(module('util'));

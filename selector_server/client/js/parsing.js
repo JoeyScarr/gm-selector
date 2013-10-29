@@ -107,9 +107,9 @@ MOD_parsing.factory('inputReader', ['util', function(util) {
 			// Precompute discrete CDFs for the realizations of each IMi.
 			for (var i = 0; i < numIMi; ++i) {
 				GCIMoutput.IMi[i].realizationCDF = util.build_cdf(
-						$.map(GCIMoutput.IMi[i].realizations, function(val) {
-							return val[0];
-						}));
+					$.map(GCIMoutput.IMi[i].realizations, function(val) {
+						return val[0];
+					}));
 			}
 			
 			// Output the data structure.

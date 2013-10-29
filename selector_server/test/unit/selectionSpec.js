@@ -1,6 +1,8 @@
 'use strict';
 
-/* jasmine specs for the selection module go here */
+/**
+ * Tests for the selection module.
+ */
 
 describe('Selection module', function(){
 	beforeEach(module('selection'));
