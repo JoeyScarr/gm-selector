@@ -35,7 +35,8 @@ MOD_chart.directive('chart', ['util', function (util) {
 				var container = element[0];
 				container.id = id;
 				scope.$watch('data', function (newVal, oldVal) {
-					$('#' + id).empty();
+					// Clear out any previous charts from the container.
+					$(container).empty();
 					
 					if (!!newVal && (!!newVal.lines && newVal.lines.length > 0)
 							|| (!!newVal.extraPoints && newVal.extraPoints.length > 0)) {
@@ -51,7 +52,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 								var x_upperlimit = line.limits.xmax;
 								var points = d3.range(x_lowerlimit, x_upperlimit, (x_upperlimit - x_lowerlimit)/500.0)
 									.map(function(x) {
-										return [x, val.func(x)];
+										return [x, line.func(x)];
 									});
 								line.data = points;
 							}
@@ -311,7 +312,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 						} else if(yScale == SCALE_LOG) {
 							// we can't have 0 so will represent 0 with a very small number
 							// 0.1 works to represent 0, 0.01 breaks the tickFormatter
-							yLeft = d3.scale.log().domain([Math.max(calculateMinY(),0.00001), maxYscaleLeft]).range([h, 0]).nice();	
+							yLeft = d3.scale.log().domain([Math.max(calculateMinY(),0.00001), maxYscaleLeft]).range([h, 0]).clamp(true).nice();	
 							numAxisLabels = numAxisLabelsLogScale;
 						} else if(yScale == SCALE_LINEAR) {
 							yLeft = d3.scale.linear().domain([0, maxYscaleLeft]).range([h, 0]).nice();
@@ -330,7 +331,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 							x = d3.scale.pow().exponent(0.3).domain([calculateMinX(), calculateMaxX()]).range([0, w]).nice();	
 							numAxisLabels = numAxisLabelsPowerScale;
 						} else if(xScale == SCALE_LOG) {
-							x = d3.scale.log().domain([calculateMinX(), calculateMaxX()]).range([0, w]);//.nice();	
+							x = d3.scale.log().domain([Math.max(calculateMinX(),0.00001), calculateMaxX()]).range([0, w]).clamp(true);//.nice();	
 							numAxisLabels = numAxisLabelsLogScale;
 						} else if(xScale == SCALE_LINEAR) {
 							x = d3.scale.linear().domain([calculateMinX(), calculateMaxX()]).range([0, w]).nice();
@@ -361,7 +362,6 @@ MOD_chart.directive('chart', ['util', function (util) {
 					* Expects to be called once during instance initialization.
 					*/
 					var createGraph = function() {
-						
 						// Add an SVG element with the desired dimensions and margin.
 						graph = d3.select(container).append("svg:svg")
 								.attr("class", "line-graph")
@@ -554,49 +554,48 @@ MOD_chart.directive('chart', ['util', function (util) {
 						
 						// append a group to contain all lines
 						var legendLabelGroup = graph.append("svg:g")
-								.attr("class", "legend-group")
+							.attr("class", "legend-group")
 							.selectAll("g")
-								.data(legendEntries)
+							.data(legendEntries)
 							.enter().append("g")
 								.attr("class", "legend-labels");
 								
 						legendLabelGroup.append("svg:text")
-								.attr("class", "legend name")
-								.text(function(d, i) {
-									return d.name;
-								})
-								.attr("font-size", legendFontSize)
-								.attr("style", "text-anchor:end")
-								.attr("fill", function(d, i) {
-									// return the color for this row
-									return d.color;
-								})
-								.attr("y", function(d, i) {
-									return getLegendEntryY(i);
-								})
-	
-								
+							.attr("class", "legend name")
+							.text(function(d, i) {
+								return d.name;
+							})
+							.attr("font-size", legendFontSize)
+							.attr("style", "text-anchor:end")
+							.attr("fill", function(d, i) {
+								// return the color for this row
+								return d.color;
+							})
+							.attr("y", function(d, i) {
+								return getLegendEntryY(i);
+							});
+						
 						// put in placeholders with 0 width that we'll populate and resize dynamically
 						legendLabelGroup.append("svg:text")
-								.attr("class", "legend value")
-								.attr("font-size", legendFontSize)
-								.attr("fill", function(d, i) {
-									return d.color;
-								})
-								.attr("y", function(d, i) {
-									return getLegendEntryY(i);
-								})		
+							.attr("class", "legend value")
+							.attr("font-size", legendFontSize)
+							.attr("fill", function(d, i) {
+								return d.color;
+							})
+							.attr("y", function(d, i) {
+								return getLegendEntryY(i);
+							});
 						
 						var cumulativeWidth = 0;
 						var labelNameEnd = [];
 						graph.selectAll("text.legend.name")
-								.attr("x", function(d, i) {
-									if (legendPositionX == LEGEND_LEFT) {
-										return 150;
-									} else { // LEGEND_RIGHT
-										return $("#" + containerId).width()-240;
-									}
-								});
+							.attr("x", function(d, i) {
+								if (legendPositionX == LEGEND_LEFT) {
+									return 150;
+								} else { // LEGEND_RIGHT
+									return $(container).width()-240;
+								}
+							});
 					}
 					
 					/**
@@ -604,7 +603,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 					 */
 					var createXScaleButtons = function() {
 						if (showXAxisScaleButtons) {
-							var cumulativeWidth = $("#" + containerId).width()-230;
+							var cumulativeWidth = $(container).width()-230;
 							// Create the label
 							var label = graph.append("svg:text")
 								.attr("font-size", "12")
@@ -624,7 +623,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 									.text(function(d, i) {
 										return d[1];
 									})
-									.attr("font-size", "12") // this must be before "x" which dynamically determines width
+									.attr("font-size", "12")
 									.attr("fill", function(d) {
 										if(d[0] == xScale) {
 											return "black";
@@ -820,7 +819,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 							if (legendPositionX == LEGEND_LEFT) {
 								return 160;
 							} else { // LEGEND_RIGHT
-								return $("#" + containerId).width()-230;
+								return $(container).width()-230;
 							}
 						});
 					};
