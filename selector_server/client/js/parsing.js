@@ -1,7 +1,7 @@
 "use strict";
 
 // Declares the parsing module, which deals with reading input files.
-var MOD_parsing = angular.module('parsing', []);
+var MOD_parsing = angular.module('parsing', ['util']);
 
 // Set up an inputReader service, which parses OpenSHA output files.
 MOD_parsing.factory('inputReader', ['util', function(util) {
