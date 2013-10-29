@@ -1,9 +1,71 @@
 "use strict";
 
+/*******************************************************************************
+ * Chart usage:
+ * To add a chart to an Angular page, simply create a <chart> element with id,
+ * data, width and height attributes. The id and data attributes will be
+ * evaluated as expressions, while width and height are literals.
+ *
+ * Example:
+ * <chart id="'mychart'" data="chartData" width="660px" height="400px"></chart>
+ *
+ * chartData in this example refers to a variable in the controller scope, which
+ * contains the chart parameters and the data to display.
+ *
+ * The format of chartData is as follows:
+ * chartData = {
+ *   xAxisLabel: The label to display on the x-axis (required)
+ *   yAxisLabel: The label to display on the y-axis (required)
+ *   xScale: 'log' or 'linear' (optional, defaults to linear)
+ *   yScale: 'log' of 'linear' (optional, defaults to linear)
+ *   legendPositionX: 'left' or 'right' (optional, defaults to right)
+ *   legendPositionY: 'bottom' or 'top' (optional, defaults to top)
+ *   showXAxisScaleButtons: Whether to allow the x-axis scale to be changed
+ *                          (defaults to true)
+ *   showYAxisScaleButtons: Whether to allow the y-axis scale to be changed
+ *                          (defaults to true)
+ *   lines: An array of lines to display on the chart (optional)
+ *   extraPoints: An array of points to display on the chart (optional)
+ * }
+ *
+ * Each line to be displayed can be based on either an array of [x,y] pairs
+ * or a function (depending on the isDiscrete field). The format of each type
+ * is below.
+ * discreteLine = {
+ *   isDiscrete: true (required)
+ *   data: The array of [x,y] pairs describing the data (required)
+ *   name: The name of the relationship (required)
+ *   drawCircles: Whether to draw circles at each data point (defaults to false)
+ *   color: The CSS color with which to draw the line (default is 'red')
+ *   width: The stroke width of the line (default is '1.0px')
+ *   showLegend: Whether to show a legend entry for this line (defaults to true)
+ *   dasharray: The dash format if a dashed line is desired (optional)
+ * }
+ * functionLine = {
+ *   isDiscrete: false (required)
+ *   func: The function of x describing the data (required)
+ *   limits: {
+ *     xmin: |
+ *     xmax: | The domain and range that this function applies to.
+ *     ymin: |
+ *     ymax: |
+ *   }
+ *   name: ... [Other fields from name onwards are the same as above]
+ * }
+ *
+ * Each extra point is rendered as a circle, and has the following format:
+ * point = {
+ *   x: The x-value of the point (required)
+ *   y: The y-value of the point (required)
+ *   color: The CSS color with which to draw the circle (default is 'gray')
+ *   width: The stroke width of the circle (default is '1.0px')
+ *   radius: The radius of the circle (default is '3.5px')
+ * }
+ * 
+ ******************************************************************************/
+
 // Declares the chart module, which draws charts.
 var MOD_chart = angular.module('chart', ['util']);
-
-// TODO: Document the input format for the chart directive here.
 
 // Create a directive for building charts.
 MOD_chart.directive('chart', ['util', function (util) {
@@ -137,19 +199,15 @@ MOD_chart.directive('chart', ['util', function (util) {
 						};
 						LineGraph(argsMap);
 					}
-				},true);
+				}, true);
 				
 				/**
-				 * Create and draw a new line-graph.
+				 * Create and draw a new line-graph. This is called when the chart is
+				 * created, as well as whenever the data changes.
 				 */
 				function LineGraph(argsMap) {
 					/* *************************************************************** */
-					/* public methods */
-					/* *************************************************************** */
-					var self = this;
-					
-					/* *************************************************************** */
-					/* private variables */
+					/* variable definitions */
 					/* *************************************************************** */
 					// the div we insert the graph into
 					var containerId = argsMap.containerId;
@@ -364,11 +422,11 @@ MOD_chart.directive('chart', ['util', function (util) {
 					var createGraph = function() {
 						// Add an SVG element with the desired dimensions and margin.
 						graph = d3.select(container).append("svg:svg")
-								.attr("class", "line-graph")
-								.attr("width", w + marginLeft + marginRight)
-								.attr("height", h + marginTop + marginBottom)
-								.append("svg:g")
-								.attr("transform", "translate(" + marginLeft + "," + marginTop + ")");
+							.attr("class", "line-graph")
+							.attr("width", w + marginLeft + marginRight)
+							.attr("height", h + marginTop + marginBottom)
+							.append("svg:g")
+							.attr("transform", "translate(" + marginLeft + "," + marginTop + ")");
 						
 						initX();
 						
@@ -377,7 +435,6 @@ MOD_chart.directive('chart', ['util', function (util) {
 							.attr("class", "x axis")
 							.attr("transform", "translate(0," + h + ")")
 							.call(xAxis);
-							
 						
 						// y is all done in initY because we need to re-assign vars quite often to change scales
 						initY();
@@ -405,7 +462,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 							.enter().append("svg:circle")
 							.attr("class", "dot")
 							.attr("r", function(d, i) {
-								return d.radius || 3.5;
+								return d.radius || '3.5px';
 							})
 							.attr("cx", function(d) {
 								return x(d.x);
@@ -436,28 +493,28 @@ MOD_chart.directive('chart', ['util', function (util) {
 						
 						// add a line group for each array of values (it will iterate the array of arrays bound to the data function above)
 						svgLinesGroup = svgLines.enter().append("g")
-								.attr("class", function(d, i) {
-									return "line_group series_" + i;
-								});
+							.attr("class", function(d, i) {
+								return "line_group series_" + i;
+							});
 								
 						// add path (the actual line) to line group
 						svgLinesGroup.append("path")
-								.attr("class", function(d, i) {
-									return "line series_" + i;
-								})
-								.attr("fill", "none")
-								.attr("stroke", function(d, i) {
-									return d.color || "red";
-								})
-								.attr("stroke-width", function(d, i) {
-									return d.width || '1.0px';
-								})
-								.attr("stroke-dasharray", function(d, i) {
-									return d.dasharray;
-								})
-								.attr("d", function(d, i) {
-									return lineFunction(d.data); // use the 'lineFunction' to create the data points in the correct x,y axis
-								});
+							.attr("class", function(d, i) {
+								return "line series_" + i;
+							})
+							.attr("fill", "none")
+							.attr("stroke", function(d, i) {
+								return d.color || "red";
+							})
+							.attr("stroke-width", function(d, i) {
+								return d.width || '1.0px';
+							})
+							.attr("stroke-dasharray", function(d, i) {
+								return d.dasharray;
+							})
+							.attr("d", function(d, i) {
+								return lineFunction(d.data); // use the 'lineFunction' to create the data points in the correct x,y axis
+							});
 						
 						// add a group of points to display circles on lines
 						svgLinePoints = graph.append("svg:g")
@@ -466,7 +523,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 							.data(linePoints) // bind the array of arrays
 							.enter().append("svg:circle")
 							.attr("class", "dot")
-							.attr("r", 3.5)
+							.attr("r", '3.5px')
 							.attr("cx", function(d) {
 								return x(d.x);
 							})
@@ -512,7 +569,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 						createXAxisLabel();
 						createYAxisLabel();
 						setValueLabelsToLatest();
-					}
+					};
 					
 					var createXAxisLabel = function() {
 						var xAxisTitle = graph.append("svg:text")
@@ -544,7 +601,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 						} else { // LEGEND_TOP
 							return 20+i*20;
 						}
-					}
+					};
 					
 					/**
 					 * Create a legend that displays the name of each line with appropriate color coding
@@ -596,7 +653,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 									return $(container).width()-240;
 								}
 							});
-					}
+					};
 					
 					/**
 					 * Create scale buttons for switching the x-axis
@@ -650,8 +707,8 @@ MOD_chart.directive('chart', ['util', function (util) {
 										handleMouseClickXScaleButton(this, d, i);
 									});
 						}
-					}
-	
+					};
+					
 					var handleMouseClickXScaleButton = function(button, buttonData, index) {
 						xScale = buttonData[0];
 						redrawAxes(true);
@@ -672,11 +729,8 @@ MOD_chart.directive('chart', ['util', function (util) {
 							} else {
 								return false;
 							}
-						})
-						
-					}
-					
-					
+						});
+					};
 					
 					/**
 					 * Create scale buttons for switching the y-axis
