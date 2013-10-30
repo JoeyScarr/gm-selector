@@ -30,7 +30,7 @@ app.filter('even', function() {
 app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'database',
 														function($scope, inputReader, util, gmSelector, database) {
 	// Change $scope.debug to true to get debug output on the page.
-	$scope.debug = true;
+	$scope.debug = false;
 	
 	$scope.inputJsonString = '';
 	
