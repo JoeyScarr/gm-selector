@@ -3,6 +3,7 @@
 // Create the main controller in the base app module.
 var app = angular.module('app');
 
+// Create odd and even filters for the weightings dialogue.
 app.filter('odd', function() {
 	return function(items) {
 		var filtered = [];
@@ -14,7 +15,6 @@ app.filter('odd', function() {
 		return filtered;
 	}
 });
-
 app.filter('even', function() {
 	return function(items) {
 		var filtered = [];
@@ -29,6 +29,9 @@ app.filter('even', function() {
 
 app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'database',
 														function($scope, inputReader, util, gmSelector, database) {
+	// Change $scope.debug to true to get debug output on the page.
+	$scope.debug = true;
+	
 	$scope.inputJsonString = '';
 	
 	var xmin = Math.exp(-5.5);
@@ -57,7 +60,6 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 	$scope.selectionOutput = null;
 	$scope.selectionOutputString = null;
 	
-	$scope.debug = false;
 	$scope.debugOutput = null;
 	
 	$scope.dbLoaded = false;
@@ -97,7 +99,7 @@ app.controller('MainCtrl', ['$scope', 'inputReader', 'util', 'gmSelector', 'data
 			$scope.dbLoading = true;
 			database.loadDatabase(newVal, function(data) {
 				$scope.databaseData = data;
-				$scope.databaseFirstLine = data[0];
+				$scope.databaseFirstLine = JSON.stringify(data[0], null, 2);
 				$scope.dbLoaded = true;
 				$scope.dbLoading = false;
 			}, function(status) {
