@@ -92,7 +92,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 			
 			var width = attrs.width || '100%';
 			var height = attrs.height || '620px';
-			var htmlText = '<div style="position:relative;display:inline-block;width:' + width + ';height:' + height + '"></div>'
+			var htmlText = '<div style="position:relative;display:inline-block;width:' + width + ';height:' + height + '"></div>';
 			element.replaceWith(htmlText);
 			
 			return function link(scope, element, attrs) {
@@ -249,8 +249,8 @@ MOD_chart.directive('chart', ['util', function (util) {
 					var legendEntries = $.map(lines, function(val, i) {
 						if (val.showLegend == null || val.showLegend) {
 							return {
-								name: val.name || "Line " + (i + 1),
-								color: val.color || "red",
+								name: val.name || 'Line ' + (i + 1),
+								color: val.color || 'red',
 								data: val.data
 							};
 						} else {
@@ -268,8 +268,8 @@ MOD_chart.directive('chart', ['util', function (util) {
 					// The minimum value that the log function will accept.
 					var minLogParameter = 0.00001;
 					
-					var tickFormatForLogScale = ",.1e";
-					var tickFormatForLinearScale = ".1f";
+					var tickFormatForLogScale = ',.1e';
+					var tickFormatForLinearScale = '.1f';
 					
 					var w = parseInt(width) - marginLeft - marginRight; // width
 					var h = parseInt(height) - marginTop - marginBottom; // height
@@ -284,23 +284,23 @@ MOD_chart.directive('chart', ['util', function (util) {
 						
 						if(withTransition) {
 							// slide x-axis to updated location
-							graph.selectAll("g .x.axis").transition()
+							graph.selectAll('g .x.axis').transition()
 								.duration(transitionDuration)
-								.ease("linear")
+								.ease('linear')
 								.call(xAxis);
 							
 							// slide y-axis to updated location
-							graph.selectAll("g .y.axis").transition()
+							graph.selectAll('g .y.axis').transition()
 								.duration(transitionDuration)
-								.ease("linear")
+								.ease('linear')
 								.call(yAxis);
 						} else {
 							// slide x-axis to updated location
-							graph.selectAll("g .x.axis")
+							graph.selectAll('g .x.axis')
 								.call(xAxis);
 						
 							// slide y-axis to updated location
-							graph.selectAll("g .y.axis")
+							graph.selectAll('g .y.axis')
 								.call(yAxis);
 						}
 					};
@@ -308,41 +308,41 @@ MOD_chart.directive('chart', ['util', function (util) {
 					var redrawLines = function(withTransition) {
 						// redraw lines
 						if(withTransition) {
-							graph.selectAll("g .lines path")
+							graph.selectAll('g .lines path')
 								.transition()
 									.duration(transitionDuration)
-									.ease("linear")
-									.attr("d", function(d, i) {
+									.ease('linear')
+									.attr('d', function(d, i) {
 										return lineFunction(d.data);
 									})
-									.attr("transform", null);
+									.attr('transform', null);
 								
-							graph.selectAll("g .lines .dot")
+							graph.selectAll('g .lines .dot')
 								.transition()
 									.duration(transitionDuration)
-									.ease("linear")
-									.attr("cx", function(d) {
+									.ease('linear')
+									.attr('cx', function(d) {
 										return x(d.x);
 									})
-									.attr("cy", function(d) {
+									.attr('cy', function(d) {
 										return y(d.y);
 									})
-									.attr("transform", null);
+									.attr('transform', null);
 						} else {
-							graph.selectAll("g .lines path")
-								.attr("d", function(d, i) {
+							graph.selectAll('g .lines path')
+								.attr('d', function(d, i) {
 									return lineFunction(d.data);
 								})
-								.attr("transform", null);
+								.attr('transform', null);
 								
-							graph.selectAll("g .lines .dot")
-								.attr("cx", function(d) {
+							graph.selectAll('g .lines .dot')
+								.attr('cx', function(d) {
 									return x(d.x);
 								})
-								.attr("cy", function(d) {
+								.attr('cy', function(d) {
 									return y(d.y);
 								})
-								.attr("transform", null);
+								.attr('transform', null);
 						}
 					};
 					
@@ -365,7 +365,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 							tickFormat = tickFormatForLinearScale;
 						}
 	
-						yAxis = d3.svg.axis().scale(y).ticks(numAxisLabels, tickFormat).orient("left").tickSize(-w,0,0);
+						yAxis = d3.svg.axis().scale(y).ticks(numAxisLabels, tickFormat).orient('left').tickSize(-w,0,0);
 					};
 					
 					/**
@@ -383,7 +383,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 							numAxisLabels = numAxisLabelsLinearScale;
 							tickFormat = tickFormatForLinearScale;
 						}
-						xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(numAxisLabels, tickFormat).tickSize(-h,0,0).tickSubdivide(0);
+						xAxis = d3.svg.axis().scale(x).orient('bottom').ticks(numAxisLabels, tickFormat).tickSize(-h,0,0).tickSubdivide(0);
 					};
 	
 					/*
@@ -409,27 +409,27 @@ MOD_chart.directive('chart', ['util', function (util) {
 					*/
 					var createGraph = function() {
 						// Add an SVG element with the desired dimensions and margin.
-						graph = d3.select(container).append("svg:svg")
-							.attr("class", "line-graph")
-							.attr("width", w + marginLeft + marginRight)
-							.attr("height", h + marginTop + marginBottom)
-							.append("svg:g")
-							.attr("transform", "translate(" + marginLeft + "," + marginTop + ")");
+						graph = d3.select(container).append('svg:svg')
+							.attr('class', 'line-graph')
+							.attr('width', w + marginLeft + marginRight)
+							.attr('height', h + marginTop + marginBottom)
+							.append('svg:g')
+							.attr('transform', 'translate(' + marginLeft + ',' + marginTop + ')');
 						
 						initX();
 						
 						// Add the x-axis.
-						graph.append("svg:g")
-							.attr("class", "x axis")
-							.attr("transform", "translate(0," + h + ")")
+						graph.append('svg:g')
+							.attr('class', 'x axis')
+							.attr('transform', 'translate(0,' + h + ')')
 							.call(xAxis);
 						
 						initY();
 								
 						// Add the y-axis to the left
-						graph.append("svg:g")
-							.attr("class", "y axis")
-							.attr("transform", "translate(0,0)")
+						graph.append('svg:g')
+							.attr('class', 'y axis')
+							.attr('transform', 'translate(0,0)')
 							.call(yAxis);
 						
 						// create line function used to plot our data
@@ -442,33 +442,33 @@ MOD_chart.directive('chart', ['util', function (util) {
 							});
 						
 						// add a group of points to display extra point data
-						svgExtraPoints = graph.append("svg:g")
-							.attr("class", "lines")
-							.selectAll(".dot")
+						svgExtraPoints = graph.append('svg:g')
+							.attr('class', 'lines')
+							.selectAll('.dot')
 							.data(extraPoints) // bind the array of arrays
-							.enter().append("svg:circle")
-							.attr("class", "dot")
-							.attr("r", function(d, i) {
+							.enter().append('svg:circle')
+							.attr('class', 'dot')
+							.attr('r', function(d, i) {
 								return d.radius || '3.5px';
 							})
-							.attr("cx", function(d) {
+							.attr('cx', function(d) {
 								return x(d.x);
 							})
-							.attr("cy", function(d) {
+							.attr('cy', function(d) {
 								return y(d.y);
 							})
-							.attr("fill", "transparent")
-							.attr("stroke", function(d, i) {
-								return d.color || "gray";
+							.attr('fill', 'transparent')
+							.attr('stroke', function(d, i) {
+								return d.color || 'gray';
 							})
-							.attr("stroke-width", function(d, i) {
+							.attr('stroke-width', function(d, i) {
 								return d.width || '1.0px';
 							});
 	
 						// append a group to contain all lines
-						svgLines = graph.append("svg:g")
-							.attr("class", "lines")
-							.selectAll("path")
+						svgLines = graph.append('svg:g')
+							.attr('class', 'lines')
+							.selectAll('path')
 							.data(lines); // bind the array of arrays
 	
 						// persist this reference so we don't do the selector every mouse event
@@ -479,49 +479,49 @@ MOD_chart.directive('chart', ['util', function (util) {
 						});
 						
 						// add a line group for each array of values (it will iterate the array of arrays bound to the data function above)
-						svgLinesGroup = svgLines.enter().append("g")
-							.attr("class", function(d, i) {
-								return "line_group series_" + i;
+						svgLinesGroup = svgLines.enter().append('g')
+							.attr('class', function(d, i) {
+								return 'line_group series_' + i;
 							});
 								
 						// add path (the actual line) to line group
-						svgLinesGroup.append("path")
-							.attr("class", function(d, i) {
-								return "line series_" + i;
+						svgLinesGroup.append('path')
+							.attr('class', function(d, i) {
+								return 'line series_' + i;
 							})
-							.attr("fill", "none")
-							.attr("stroke", function(d, i) {
-								return d.color || "red";
+							.attr('fill', 'none')
+							.attr('stroke', function(d, i) {
+								return d.color || 'red';
 							})
-							.attr("stroke-width", function(d, i) {
+							.attr('stroke-width', function(d, i) {
 								return d.width || '1.0px';
 							})
-							.attr("stroke-dasharray", function(d, i) {
+							.attr('stroke-dasharray', function(d, i) {
 								return d.dasharray;
 							})
-							.attr("d", function(d, i) {
+							.attr('d', function(d, i) {
 								return lineFunction(d.data); // use the 'lineFunction' to create the data points in the correct x,y axis
 							});
 						
 						// add a group of points to display circles on lines
-						svgLinePoints = graph.append("svg:g")
-							.attr("class", "lines")
-							.selectAll(".dot")
+						svgLinePoints = graph.append('svg:g')
+							.attr('class', 'lines')
+							.selectAll('.dot')
 							.data(linePoints) // bind the array of arrays
-							.enter().append("svg:circle")
-							.attr("class", "dot")
-							.attr("r", '3.5px')
-							.attr("cx", function(d) {
+							.enter().append('svg:circle')
+							.attr('class', 'dot')
+							.attr('r', '3.5px')
+							.attr('cx', function(d) {
 								return x(d.x);
 							})
-							.attr("cy", function(d) {
+							.attr('cy', function(d) {
 								return y(d.y);
 							})
-							.attr("fill", "transparent")
-							.attr("stroke", function(d, i) {
-								return d.color || "red";
+							.attr('fill', 'transparent')
+							.attr('stroke', function(d, i) {
+								return d.color || 'red';
 							})
-							.attr("stroke-width", function(d, i) {
+							.attr('stroke-width', function(d, i) {
 								return d.width || '1.0px';
 							});
 						
@@ -529,25 +529,25 @@ MOD_chart.directive('chart', ['util', function (util) {
 						svgLinesGroupText = svgLinesGroup.filter(function(d, i) {
 								return d.showLegend;
 							})
-							.append("svg:text");
-						svgLinesGroupText.attr("class", function(d, i) {
-								return "line_label series_" + i;
+							.append('svg:text');
+						svgLinesGroupText.attr('class', function(d, i) {
+								return 'line_label series_' + i;
 							})
-							.text("");
+							.text('');
 						
 						// add a 'hover' line that we'll show as a user moves their mouse (or finger)
 						// so we can use it to show detailed values of each line
-						hoverLineGroup = graph.append("svg:g")
-											.attr("class", "hover-line");
+						hoverLineGroup = graph.append('svg:g')
+											.attr('class', 'hover-line');
 						// add the line to the group
 						hoverLine = hoverLineGroup
-							.append("svg:line")
-								.attr("x1", 0).attr("x2", 0) // vertical line so same value on each
-								.attr("y1", 0).attr("y2", h) // top to bottom	
-								.attr("stroke","#6E7B8B")
-								.attr("fill","none");
+							.append('svg:line')
+								.attr('x1', 0).attr('x2', 0) // vertical line so same value on each
+								.attr('y1', 0).attr('y2', h) // top to bottom	
+								.attr('stroke','#6E7B8B')
+								.attr('fill','none');
 						// hide it by default
-						hoverLine.classed("hide", true);
+						hoverLine.classed('hide', true);
 						
 						createXScaleButtons();
 						createYScaleButtons();
@@ -558,24 +558,24 @@ MOD_chart.directive('chart', ['util', function (util) {
 					};
 					
 					var createXAxisLabel = function() {
-						var xAxisTitle = graph.append("svg:text")
+						var xAxisTitle = graph.append('svg:text')
 							.text(xAxisLabel)
-							.attr("class", "x-axis-label")
-							.attr("style", "text-anchor:middle")
-							.attr("font-weight", "bold")
-							.attr("x", w/2)
-							.attr("y", h+30);
+							.attr('class', 'x-axis-label')
+							.attr('style', 'text-anchor:middle')
+							.attr('font-weight', 'bold')
+							.attr('x', w/2)
+							.attr('y', h+30);
 					};
 					
 					var createYAxisLabel = function() {
-						var yAxisTitle = graph.append("svg:text")
+						var yAxisTitle = graph.append('svg:text')
 							.text(yAxisLabel)
-							.attr("class", "y-axis-label")
-							.attr("style", "text-anchor:middle")
-							.attr("transform", "rotate(270)")
-							.attr("font-weight", "bold")
-							.attr("x", -h/2)
-							.attr("y", -45);
+							.attr('class', 'y-axis-label')
+							.attr('style', 'text-anchor:middle')
+							.attr('transform', 'rotate(270)')
+							.attr('font-weight', 'bold')
+							.attr('x', -h/2)
+							.attr('y', -45);
 					};
 					
 					/**
@@ -596,43 +596,43 @@ MOD_chart.directive('chart', ['util', function (util) {
 					var createLegend = function() {
 						
 						// append a group to contain all lines
-						var legendLabelGroup = graph.append("svg:g")
-							.attr("class", "legend-group")
-							.selectAll("g")
+						var legendLabelGroup = graph.append('svg:g')
+							.attr('class', 'legend-group')
+							.selectAll('g')
 							.data(legendEntries)
-							.enter().append("g")
-								.attr("class", "legend-labels");
+							.enter().append('g')
+								.attr('class', 'legend-labels');
 								
-						legendLabelGroup.append("svg:text")
-							.attr("class", "legend name")
+						legendLabelGroup.append('svg:text')
+							.attr('class', 'legend name')
 							.text(function(d, i) {
 								return d.name;
 							})
-							.attr("font-size", legendFontSize)
-							.attr("style", "text-anchor:end")
-							.attr("fill", function(d, i) {
+							.attr('font-size', legendFontSize)
+							.attr('style', 'text-anchor:end')
+							.attr('fill', function(d, i) {
 								// return the color for this row
 								return d.color;
 							})
-							.attr("y", function(d, i) {
+							.attr('y', function(d, i) {
 								return getLegendEntryY(i);
 							});
 						
 						// put in placeholders with 0 width that we'll populate and resize dynamically
-						legendLabelGroup.append("svg:text")
-							.attr("class", "legend value")
-							.attr("font-size", legendFontSize)
-							.attr("fill", function(d, i) {
+						legendLabelGroup.append('svg:text')
+							.attr('class', 'legend value')
+							.attr('font-size', legendFontSize)
+							.attr('fill', function(d, i) {
 								return d.color;
 							})
-							.attr("y", function(d, i) {
+							.attr('y', function(d, i) {
 								return getLegendEntryY(i);
 							});
 						
 						var cumulativeWidth = 0;
 						var labelNameEnd = [];
-						graph.selectAll("text.legend.name")
-							.attr("x", function(d, i) {
+						graph.selectAll('text.legend.name')
+							.attr('x', function(d, i) {
 								if (legendPositionX == LEGEND_LEFT) {
 									return 150;
 								} else { // LEGEND_RIGHT
@@ -648,47 +648,47 @@ MOD_chart.directive('chart', ['util', function (util) {
 						if (showXAxisScaleButtons) {
 							var cumulativeWidth = $(container).width()-230;
 							// Create the label
-							var label = graph.append("svg:text")
-								.attr("font-size", "12")
-								.attr("font-weight", "bold")
-								.text("X-axis Scale:")
-								.attr("y", h+28)
-								.attr("x", cumulativeWidth);
+							var label = graph.append('svg:text')
+								.attr('font-size', '12')
+								.attr('font-weight', 'bold')
+								.text('X-axis Scale:')
+								.attr('y', h+28)
+								.attr('x', cumulativeWidth);
 							cumulativeWidth += 80;
 							// Create the buttons
-							var buttonGroup = graph.append("svg:g")
-								.attr("class", "x scale-button-group")
-								.selectAll("g")
+							var buttonGroup = graph.append('svg:g')
+								.attr('class', 'x scale-button-group')
+								.selectAll('g')
 								.data(scales)
 								.enter()
-								.append("svg:text")
-									.attr("class", "x scale-button")
+								.append('svg:text')
+									.attr('class', 'x scale-button')
 									.text(function(d, i) {
 										return d[1];
 									})
-									.attr("font-size", "12")
-									.attr("fill", function(d) {
+									.attr('font-size', '12')
+									.attr('fill', function(d) {
 										if(d[0] == xScale) {
-											return "black";
+											return 'black';
 										} else {
-											return "blue";
+											return 'blue';
 										}
 									})
-									.classed("selected", function(d) {
+									.classed('selected', function(d) {
 										if(d[0] == xScale) {
 											return true;
 										} else {
 											return false;
 										}
 									})
-									.attr("x", function(d, i) {
+									.attr('x', function(d, i) {
 										// return it at the width of previous labels (where the last one ends)
 										var returnX = cumulativeWidth;
 										// increment cumulative to include this one
 										cumulativeWidth += 40;
 										return returnX;
 									})
-									.attr("y", h+28)
+									.attr('y', h+28)
 									.on('click', function(d, i) {
 										handleMouseClickXScaleButton(this, d, i);
 									});
@@ -702,14 +702,14 @@ MOD_chart.directive('chart', ['util', function (util) {
 						
 						// change text decoration
 						graph.selectAll('.x.scale-button')
-						.attr("fill", function(d) {
+						.attr('fill', function(d) {
 							if(d[0] == xScale) {
-								return "black";
+								return 'black';
 							} else {
-								return "blue";
+								return 'blue';
 							}
 						})
-						.classed("selected", function(d) {
+						.classed('selected', function(d) {
 							if(d[0] == xScale) {
 								return true;
 							} else {
@@ -725,46 +725,46 @@ MOD_chart.directive('chart', ['util', function (util) {
 						if (showYAxisScaleButtons) {
 							var cumulativeWidth = 80;
 							// Create the label
-							var label = graph.append("svg:text")
-								.attr("font-size", "12")
-								.attr("font-weight", "bold")
-								.text("Y-axis Scale:")
-								.attr("y", -4)
-								.attr("x", 0);
+							var label = graph.append('svg:text')
+								.attr('font-size', '12')
+								.attr('font-weight', 'bold')
+								.text('Y-axis Scale:')
+								.attr('y', -4)
+								.attr('x', 0);
 							// Create the buttons
-							var buttonGroup = graph.append("svg:g")
-								.attr("class", "y scale-button-group")
-								.selectAll("g")
+							var buttonGroup = graph.append('svg:g')
+								.attr('class', 'y scale-button-group')
+								.selectAll('g')
 								.data(scales)
 								.enter()
-								.append("svg:text")
-									.attr("class", "y scale-button")
+								.append('svg:text')
+									.attr('class', 'y scale-button')
 									.text(function(d, i) {
 										return d[1];
 									})
-									.attr("font-size", "12") // this must be before "x" which dynamically determines width
-									.attr("fill", function(d) {
+									.attr('font-size', '12') // this must be before 'x' which dynamically determines width
+									.attr('fill', function(d) {
 										if(d[0] == yScale) {
-											return "black";
+											return 'black';
 										} else {
-											return "blue";
+											return 'blue';
 										}
 									})
-									.classed("selected", function(d) {
+									.classed('selected', function(d) {
 										if(d[0] == yScale) {
 											return true;
 										} else {
 											return false;
 										}
 									})
-									.attr("x", function(d, i) {
+									.attr('x', function(d, i) {
 										// return it at the width of previous labels (where the last one ends)
 										var returnX = cumulativeWidth;
 										// increment cumulative to include this one
 										cumulativeWidth += 40;
 										return returnX;
 									})
-									.attr("y", -4)
+									.attr('y', -4)
 									.on('click', function(d, i) {
 										handleMouseClickYScaleButton(this, d, i);
 									});
@@ -778,14 +778,14 @@ MOD_chart.directive('chart', ['util', function (util) {
 						
 						// change text decoration
 						graph.selectAll('.y.scale-button')
-						.attr("fill", function(d) {
+						.attr('fill', function(d) {
 							if(d[0] == yScale) {
-								return "black";
+								return 'black';
 							} else {
-								return "blue";
+								return 'blue';
 							}
 						})
-						.classed("selected", function(d) {
+						.classed('selected', function(d) {
 							if(d[0] == yScale) {
 								return true;
 							} else {
@@ -798,24 +798,24 @@ MOD_chart.directive('chart', ['util', function (util) {
 					 * Create the link to export the chart data
 					 */
 					var createExportButton = function() {
-						var buttonGroup = graph.append("svg:g")
-							.attr("class", "export-button-group");
-						var link = buttonGroup.append("a")
-							.attr("xlink:href", "data:text/plain;charset=utf-8," + encodeURIComponent(generateChartDataFile()))
-							.attr("target","_blank")
-							.attr("class", "export-button");
-						link.append("svg:text")
-							.attr("text-anchor", "end")
-							.attr("y", -4)
-							.attr("x", w-16) // set at end so we can position at far right edge and add text from right to left
-							.attr("font-size", "12")
-							.text("Export data");
-						link.append("svg:image")
-							.attr("xlink:href", "/images/export_16.png")
-							.attr("height","16px")
-							.attr("width","16px")
-							.attr("y", -16)
-							.attr("x", w-16);
+						var buttonGroup = graph.append('svg:g')
+							.attr('class', 'export-button-group');
+						var link = buttonGroup.append('a')
+							.attr('xlink:href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(generateChartDataFile()))
+							.attr('target','_blank')
+							.attr('class', 'export-button');
+						link.append('svg:text')
+							.attr('text-anchor', 'end')
+							.attr('y', -4)
+							.attr('x', w-16) // set at end so we can position at far right edge and add text from right to left
+							.attr('font-size', '12')
+							.text('Export data');
+						link.append('svg:image')
+							.attr('xlink:href', '/images/export_16.png')
+							.attr('height','16px')
+							.attr('width','16px')
+							.attr('y', -16)
+							.attr('x', w-16);
 					};
 	
 					/**
@@ -829,10 +829,10 @@ MOD_chart.directive('chart', ['util', function (util) {
 						
 						if(mouseX >= 0 && mouseX <= w && mouseY >= 0 && mouseY <= h) {
 							//show the hover line
-							hoverLine.classed("hide", false);
+							hoverLine.classed('hide', false);
 	
 							//set position of hoverLine
-							hoverLine.attr("x1", mouseX).attr("x2", mouseX);
+							hoverLine.attr('x1', mouseX).attr('x2', mouseX);
 							
 							displayValueLabelsForPositionX(mouseX);
 						}
@@ -848,14 +848,14 @@ MOD_chart.directive('chart', ['util', function (util) {
 								animate = true;
 							}
 						}
-						graph.selectAll("text.legend.value")
+						graph.selectAll('text.legend.value')
 						.text(function(d, i) {
 							return getValueForPositionXFromData(xPosition, d.data);
 						});
 	
 						// position label values
-						graph.selectAll("text.legend.value")
-						.attr("x", function(d, i) {
+						graph.selectAll('text.legend.value')
+						.attr('x', function(d, i) {
 							if (legendPositionX == LEGEND_LEFT) {
 								return 160;
 							} else { // LEGEND_RIGHT
@@ -879,7 +879,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 								}
 							}
 						}
-						return "";
+						return '';
 					};
 					
 					/**
