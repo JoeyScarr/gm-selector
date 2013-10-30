@@ -191,7 +191,6 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 				for (var i = 0; i < GCIMdata.numIMi; ++i) {
 					var im = GCIMdata.IMi[i];
 					var ksDiff = util.ks_diff(selectedGroundMotions, im);
-					im.ksDiff = ksDiff;
 					
 					rSum += im.weighting * ksDiff * ksDiff;
 				}
@@ -200,6 +199,13 @@ MOD_selection.factory('gmSelector', ['util', function(util) {
 					minR = rSum;
 					minRIndex = k;
 				}
+			}
+			
+			// Store the K-S differences for the best-fitting replicate on each IM.
+			var selectedGMs = selectedGroundMotionReplicateIndex[minRIndex];
+			for (var i = 0; i < GCIMdata.numIMi; ++i) {
+				var im = GCIMdata.IMi[i];
+				im.ksDiff = util.ks_diff(selectedGMs, im);
 			}
 			
 			// The replicate with minimum R is at index minRIndex
