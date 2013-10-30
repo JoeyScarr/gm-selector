@@ -24,6 +24,10 @@
  *                          (defaults to true)
  *   showYAxisScaleButtons: Whether to allow the y-axis scale to be changed
  *                          (defaults to true)
+ *   numAxisLabelsLogScale: How many axis labels to show in log mode
+ *                          (default 5)
+ *   numAxisLabelsLinearScale: How many axis labels to show in linear mode
+ *                             (default 6)
  *   lines: An array of lines to display on the chart (optional)
  *   extraPoints: An array of points to display on the chart (optional)
  * }
@@ -72,7 +76,6 @@ MOD_chart.directive('chart', ['util', function (util) {
 	// Constants
 	var SCALE_LINEAR = 'linear';
 	var SCALE_LOG = 'log';
-	var SCALE_POWER = 'pow';
 	var LEGEND_TOP = 'top';
 	var LEGEND_BOTTOM = 'bottom';
 	var LEGEND_LEFT = 'left';
@@ -214,7 +217,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 					var container = argsMap.container;
 					
 					// functions we use to display and interact with the graphs and lines
-					var graph, x, yLeft, xAxis, yAxisLeft, yAxisLeftDomainStart;
+					var graph, x, y, xAxis, yAxis;
 					
 					// SVG elements
 					var svgLinesGroup, svgExtraPoints, svgLinePoints, svgLinesGroupText, svgLines;
@@ -235,7 +238,6 @@ MOD_chart.directive('chart', ['util', function (util) {
 					var yAxisLabel = util.defaultFor(argsMap.yAxisLabel, 'Y Axis');
 					var numAxisLabelsLinearScale = util.defaultFor(argsMap.numAxisLabelsLinearScale, 6);
 					var numAxisLabelsLogScale = util.defaultFor(argsMap.numAxisLabelsLogScale, 5);
-					var numAxisLabelsPowerScale = util.defaultFor(argsMap.numAxisLabelsPowerScale, 6);
 					var showXAxisScaleButtons = util.defaultFor(argsMap.showXAxisScaleButtons, true);
 					var showYAxisScaleButtons = util.defaultFor(argsMap.showYAxisScaleButtons, true);
 					
@@ -257,33 +259,20 @@ MOD_chart.directive('chart', ['util', function (util) {
 					});
 					
 					var hoverContainer, hoverLine, hoverLineGroup;
-					var legendFontSize = 12; // we can resize dynamically to make fit so we remember it here
 					
-					// define dimensions of graph
+					// Drawing and sizing constants
 					var marginTop = 15, marginRight = 20, marginBottom = 35, marginLeft = 70;
-					var w, h;	 // width & height
-					
+					var legendFontSize = 12;
 					var transitionDuration = 300;
 					
+					// The minimum value that the log function will accept.
+					var minLogParameter = 0.00001;
+					
 					var tickFormatForLogScale = ",.1e";
-						
-					/* *************************************************************** */
-					/* initialization */
-					/* *************************************************************** */
-					var _init = function() {
-						initDimensions();
-						
-						createGraph();
-						
-						// window resize listener
-						// de-dupe logic from http://stackoverflow.com/questions/667426/javascript-resize-event-firing-multiple-times-while-dragging-the-resize-handle/668185#668185
-						var TO = false;
-						$(window).resize(function(){
-							if(TO !== false)
-								clearTimeout(TO);
-							TO = setTimeout(handleWindowResizeEvent, 200); // time in miliseconds
-						});
-					};
+					var tickFormatForLinearScale = ".1f";
+					
+					var w = parseInt(width) - marginLeft - marginRight; // width
+					var h = parseInt(height) - marginTop - marginBottom; // height
 					
 					/* *************************************************************** */
 					/* private methods */
@@ -301,18 +290,18 @@ MOD_chart.directive('chart', ['util', function (util) {
 								.call(xAxis);
 							
 							// slide y-axis to updated location
-							graph.selectAll("g .y.axis.left").transition()
+							graph.selectAll("g .y.axis").transition()
 								.duration(transitionDuration)
 								.ease("linear")
-								.call(yAxisLeft);
+								.call(yAxis);
 						} else {
 							// slide x-axis to updated location
 							graph.selectAll("g .x.axis")
 								.call(xAxis);
 						
 							// slide y-axis to updated location
-							graph.selectAll("g .y.axis.left")
-								.call(yAxisLeft);
+							graph.selectAll("g .y.axis")
+								.call(yAxis);
 						}
 					};
 					
@@ -336,7 +325,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 										return x(d.x);
 									})
 									.attr("cy", function(d) {
-										return yLeft(d.y);
+										return y(d.y);
 									})
 									.attr("transform", null);
 						} else {
@@ -351,51 +340,50 @@ MOD_chart.directive('chart', ['util', function (util) {
 									return x(d.x);
 								})
 								.attr("cy", function(d) {
-									return yLeft(d.y);
+									return y(d.y);
 								})
 								.attr("transform", null);
 						}
 					};
 					
 					/*
-					 * Allow re-initializing the y function at any time.
-					 *  - it will properly determine what scale is being used based on last user choice (via public switchScale methods)
+					 * Allow re-initializing the y function at any time. This should be
+					 * called when the y axis scale is changed.
 					 */
 					var initY = function() {
-						var maxYscaleLeft = calculateMaxY();
-						var numAxisLabels;
-						if(yScale == SCALE_POWER) {
-							yLeft = d3.scale.pow().exponent(0.3).domain([0, maxYscaleLeft]).range([h, 0]).nice();	
-							numAxisLabels = numAxisLabelsPowerScale;
-						} else if(yScale == SCALE_LOG) {
+						var maxYscale = calculateMaxY();
+						var numAxisLabels, tickFormat;
+						if (yScale == SCALE_LOG) {
 							// we can't have 0 so will represent 0 with a very small number
 							// 0.1 works to represent 0, 0.01 breaks the tickFormatter
-							yLeft = d3.scale.log().domain([Math.max(calculateMinY(),0.00001), maxYscaleLeft]).range([h, 0]).clamp(true).nice();	
+							y = d3.scale.log().domain([Math.max(calculateMinY(),minLogParameter), maxYscale]).range([h, 0]).clamp(true).nice();	
 							numAxisLabels = numAxisLabelsLogScale;
-						} else if(yScale == SCALE_LINEAR) {
-							yLeft = d3.scale.linear().domain([0, maxYscaleLeft]).range([h, 0]).nice();
+							tickFormat = tickFormatForLogScale;
+						} else if (yScale == SCALE_LINEAR) {
+							y = d3.scale.linear().domain([0, maxYscale]).range([h, 0]).nice();
 							numAxisLabels = numAxisLabelsLinearScale;
+							tickFormat = tickFormatForLinearScale;
 						}
 	
-						yAxisLeft = d3.svg.axis().scale(yLeft).ticks(numAxisLabels, tickFormatForLogScale).orient("left").tickSize(-w,0,0);
+						yAxis = d3.svg.axis().scale(y).ticks(numAxisLabels, tickFormat).orient("left").tickSize(-w,0,0);
 					};
 					
 					/**
-					 * Allow re-initializing the x function at any time.
+					 * Allow re-initializing the x function at any time. This should be
+					 * called when the x axis scale is changed.
 					 */
 					var initX = function() {
-						var numAxisLabels;
-						if(xScale == SCALE_POWER) {
-							x = d3.scale.pow().exponent(0.3).domain([calculateMinX(), calculateMaxX()]).range([0, w]).nice();	
-							numAxisLabels = numAxisLabelsPowerScale;
-						} else if(xScale == SCALE_LOG) {
-							x = d3.scale.log().domain([Math.max(calculateMinX(),0.00001), calculateMaxX()]).range([0, w]).clamp(true);//.nice();	
+						var numAxisLabels, tickFormat;
+						if (xScale == SCALE_LOG) {
+							x = d3.scale.log().domain([Math.max(calculateMinX(),minLogParameter), calculateMaxX()]).range([0, w]).clamp(true);//.nice();	
 							numAxisLabels = numAxisLabelsLogScale;
-						} else if(xScale == SCALE_LINEAR) {
+							tickFormat = tickFormatForLogScale;
+						} else if (xScale == SCALE_LINEAR) {
 							x = d3.scale.linear().domain([calculateMinX(), calculateMaxX()]).range([0, w]).nice();
 							numAxisLabels = numAxisLabelsLinearScale;
+							tickFormat = tickFormatForLinearScale;
 						}
-						xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(numAxisLabels, tickFormatForLogScale).tickSize(-h,0,0).tickSubdivide(0);
+						xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(numAxisLabels, tickFormat).tickSize(-h,0,0).tickSubdivide(0);
 					};
 	
 					/*
@@ -436,14 +424,13 @@ MOD_chart.directive('chart', ['util', function (util) {
 							.attr("transform", "translate(0," + h + ")")
 							.call(xAxis);
 						
-						// y is all done in initY because we need to re-assign vars quite often to change scales
 						initY();
 								
 						// Add the y-axis to the left
 						graph.append("svg:g")
-							.attr("class", "y axis left")
+							.attr("class", "y axis")
 							.attr("transform", "translate(0,0)")
-							.call(yAxisLeft);
+							.call(yAxis);
 						
 						// create line function used to plot our data
 						lineFunction = d3.svg.line()
@@ -451,7 +438,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 								return x(d[0]);
 							})
 							.y(function(d, i) {
-								return yLeft(d[1]);
+								return y(d[1]);
 							});
 						
 						// add a group of points to display extra point data
@@ -468,7 +455,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 								return x(d.x);
 							})
 							.attr("cy", function(d) {
-								return yLeft(d.y);
+								return y(d.y);
 							})
 							.attr("fill", "transparent")
 							.attr("stroke", function(d, i) {
@@ -528,7 +515,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 								return x(d.x);
 							})
 							.attr("cy", function(d) {
-								return yLeft(d.y);
+								return y(d.y);
 							})
 							.attr("fill", "transparent")
 							.attr("stroke", function(d, i) {
@@ -568,7 +555,6 @@ MOD_chart.directive('chart', ['util', function (util) {
 						createLegend();
 						createXAxisLabel();
 						createYAxisLabel();
-						setValueLabelsToLatest();
 					};
 					
 					var createXAxisLabel = function() {
@@ -671,12 +657,12 @@ MOD_chart.directive('chart', ['util', function (util) {
 							cumulativeWidth += 80;
 							// Create the buttons
 							var buttonGroup = graph.append("svg:g")
-								.attr("class", "x-scale-button-group")
+								.attr("class", "x scale-button-group")
 								.selectAll("g")
 								.data(scales)
 								.enter()
 								.append("svg:text")
-									.attr("class", "x-scale-button")
+									.attr("class", "x scale-button")
 									.text(function(d, i) {
 										return d[1];
 									})
@@ -715,7 +701,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 						redrawLines(true);
 						
 						// change text decoration
-						graph.selectAll('.x-scale-button')
+						graph.selectAll('.x.scale-button')
 						.attr("fill", function(d) {
 							if(d[0] == xScale) {
 								return "black";
@@ -747,12 +733,12 @@ MOD_chart.directive('chart', ['util', function (util) {
 								.attr("x", 0);
 							// Create the buttons
 							var buttonGroup = graph.append("svg:g")
-								.attr("class", "scale-button-group")
+								.attr("class", "y scale-button-group")
 								.selectAll("g")
 								.data(scales)
 								.enter()
 								.append("svg:text")
-									.attr("class", "scale-button")
+									.attr("class", "y scale-button")
 									.text(function(d, i) {
 										return d[1];
 									})
@@ -780,18 +766,18 @@ MOD_chart.directive('chart', ['util', function (util) {
 									})
 									.attr("y", -4)
 									.on('click', function(d, i) {
-										handleMouseClickScaleButton(this, d, i);
+										handleMouseClickYScaleButton(this, d, i);
 									});
 						}
 					};
 	
-					var handleMouseClickScaleButton = function(button, buttonData, index) {
+					var handleMouseClickYScaleButton = function(button, buttonData, index) {
 						yScale = buttonData[0];
 						redrawAxes(true);
 						redrawLines(true);
 						
 						// change text decoration
-						graph.selectAll('.scale-button')
+						graph.selectAll('.y.scale-button')
 						.attr("fill", function(d) {
 							if(d[0] == yScale) {
 								return "black";
@@ -879,13 +865,6 @@ MOD_chart.directive('chart', ['util', function (util) {
 					};
 					
 					/**
-					* Set the value labels to whatever the latest data point is.
-					*/
-					var setValueLabelsToLatest = function(withTransition) {
-						displayValueLabelsForPositionX(w, withTransition);
-					};
-					
-					/**
 					* Convert back from an X position on the graph to a data value from the given array (one of the lines).
 					*/
 					var getValueForPositionXFromData = function(xPosition, data) {
@@ -901,22 +880,6 @@ MOD_chart.directive('chart', ['util', function (util) {
 							}
 						}
 						return "";
-					};
-	
-					
-					/**
-					 * Called when the window is resized to redraw graph accordingly.
-					 */
-					var handleWindowResizeEvent = function() {
-						initDimensions();
-					};
-	
-					/**
-					 * Set height/width dimensions based on container.
-					 */
-					var initDimensions = function() {
-						w = parseInt(width) - marginLeft - marginRight; // width
-						h = parseInt(height) - marginTop - marginBottom; // height
 					};
 					
 					/**
@@ -946,7 +909,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 						return result;
 					};
 					
-					_init();
+					createGraph();
 				};
 			};
 		}
