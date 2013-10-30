@@ -261,8 +261,21 @@ MOD_chart.directive('chart', ['util', function (util) {
 					var hoverContainer, hoverLine, hoverLineGroup;
 					
 					// Drawing and sizing constants
-					var marginTop = 15, marginRight = 20, marginBottom = 35, marginLeft = 70;
+					var marginTop = 15;
+					var marginRight = 20;
+					var marginBottom = 35;
+					var marginLeft = 70;
+					var xAxisLabelMargin = 30;
+					var yAxisLabelMargin = 45;
 					var legendFontSize = 12;
+					var legendEntryHeight = 20;
+					var legendLeftMargin = 150;
+					var legendRightMargin = 240;
+					var legendValueLabelSpacing = 10;
+					var scaleButtonGroupWidth = 140;
+					var scaleButtonLabelWidth = 80;
+					var scaleButtonItemWidth = 40;
+					var buttonFontSize = 12;
 					var transitionDuration = 300;
 					
 					// The minimum value that the log function will accept.
@@ -564,7 +577,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 							.attr('style', 'text-anchor:middle')
 							.attr('font-weight', 'bold')
 							.attr('x', w/2)
-							.attr('y', h+30);
+							.attr('y', h+xAxisLabelMargin);
 					};
 					
 					var createYAxisLabel = function() {
@@ -575,7 +588,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 							.attr('transform', 'rotate(270)')
 							.attr('font-weight', 'bold')
 							.attr('x', -h/2)
-							.attr('y', -45);
+							.attr('y', -yAxisLabelMargin);
 					};
 					
 					/**
@@ -583,9 +596,9 @@ MOD_chart.directive('chart', ['util', function (util) {
 					 */
 					var getLegendEntryY = function(i) {
 						if (legendPositionY == LEGEND_BOTTOM) {
-							return h + marginTop - (legendEntries.length - i) * 20 - 20;
+							return h + marginTop - (legendEntries.length - i + 1) * legendEntryHeight;
 						} else { // LEGEND_TOP
-							return 20+i*20;
+							return (i + 1) * legendEntryHeight;
 						}
 					};
 					
@@ -634,9 +647,9 @@ MOD_chart.directive('chart', ['util', function (util) {
 						graph.selectAll('text.legend.name')
 							.attr('x', function(d, i) {
 								if (legendPositionX == LEGEND_LEFT) {
-									return 150;
+									return legendLeftMargin;
 								} else { // LEGEND_RIGHT
-									return $(container).width()-240;
+									return $(container).width() - legendRightMargin;
 								}
 							});
 					};
@@ -646,15 +659,15 @@ MOD_chart.directive('chart', ['util', function (util) {
 					 */
 					var createXScaleButtons = function() {
 						if (showXAxisScaleButtons) {
-							var cumulativeWidth = $(container).width()-230;
+							var nextX = w - scaleButtonGroupWidth;
 							// Create the label
 							var label = graph.append('svg:text')
-								.attr('font-size', '12')
+								.attr('font-size', buttonFontSize)
 								.attr('font-weight', 'bold')
 								.text('X-axis Scale:')
-								.attr('y', h+28)
-								.attr('x', cumulativeWidth);
-							cumulativeWidth += 80;
+								.attr('y', h + xAxisLabelMargin)
+								.attr('x', nextX);
+							nextX += scaleButtonLabelWidth;
 							// Create the buttons
 							var buttonGroup = graph.append('svg:g')
 								.attr('class', 'x scale-button-group')
@@ -666,7 +679,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 									.text(function(d, i) {
 										return d[1];
 									})
-									.attr('font-size', '12')
+									.attr('font-size', buttonFontSize)
 									.attr('fill', function(d) {
 										if(d[0] == xScale) {
 											return 'black';
@@ -683,12 +696,12 @@ MOD_chart.directive('chart', ['util', function (util) {
 									})
 									.attr('x', function(d, i) {
 										// return it at the width of previous labels (where the last one ends)
-										var returnX = cumulativeWidth;
+										var returnX = nextX;
 										// increment cumulative to include this one
-										cumulativeWidth += 40;
+										nextX += scaleButtonItemWidth;
 										return returnX;
 									})
-									.attr('y', h+28)
+									.attr('y', h + xAxisLabelMargin)
 									.on('click', function(d, i) {
 										handleMouseClickXScaleButton(this, d, i);
 									});
@@ -723,14 +736,14 @@ MOD_chart.directive('chart', ['util', function (util) {
 					 */
 					var createYScaleButtons = function() {
 						if (showYAxisScaleButtons) {
-							var cumulativeWidth = 80;
 							// Create the label
 							var label = graph.append('svg:text')
-								.attr('font-size', '12')
+								.attr('font-size', buttonFontSize)
 								.attr('font-weight', 'bold')
 								.text('Y-axis Scale:')
 								.attr('y', -4)
 								.attr('x', 0);
+							var nextX = scaleButtonLabelWidth;
 							// Create the buttons
 							var buttonGroup = graph.append('svg:g')
 								.attr('class', 'y scale-button-group')
@@ -742,7 +755,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 									.text(function(d, i) {
 										return d[1];
 									})
-									.attr('font-size', '12') // this must be before 'x' which dynamically determines width
+									.attr('font-size', buttonFontSize)
 									.attr('fill', function(d) {
 										if(d[0] == yScale) {
 											return 'black';
@@ -759,9 +772,9 @@ MOD_chart.directive('chart', ['util', function (util) {
 									})
 									.attr('x', function(d, i) {
 										// return it at the width of previous labels (where the last one ends)
-										var returnX = cumulativeWidth;
+										var returnX = nextX;
 										// increment cumulative to include this one
-										cumulativeWidth += 40;
+										nextX += scaleButtonItemWidth;
 										return returnX;
 									})
 									.attr('y', -4)
@@ -808,7 +821,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 							.attr('text-anchor', 'end')
 							.attr('y', -4)
 							.attr('x', w-16) // set at end so we can position at far right edge and add text from right to left
-							.attr('font-size', '12')
+							.attr('font-size', buttonFontSize)
 							.text('Export data');
 						link.append('svg:image')
 							.attr('xlink:href', '/images/export_16.png')
@@ -857,9 +870,9 @@ MOD_chart.directive('chart', ['util', function (util) {
 						graph.selectAll('text.legend.value')
 						.attr('x', function(d, i) {
 							if (legendPositionX == LEGEND_LEFT) {
-								return 160;
+								return legendLeftMargin + legendValueLabelSpacing;
 							} else { // LEGEND_RIGHT
-								return $(container).width()-230;
+								return $(container).width() - legendRightMargin + legendValueLabelSpacing;
 							}
 						});
 					};
