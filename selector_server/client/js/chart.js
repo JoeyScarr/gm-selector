@@ -824,7 +824,7 @@ MOD_chart.directive('chart', ['util', function (util) {
 							.attr('font-size', buttonFontSize)
 							.text('Export data');
 						link.append('svg:image')
-							.attr('xlink:href', '/images/export_16.png')
+							.attr('xlink:href', 'images/export_16.png')
 							.attr('height','16px')
 							.attr('width','16px')
 							.attr('y', -16)
