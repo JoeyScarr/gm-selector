@@ -7,7 +7,7 @@ Based on the algorithm described in:
 Bradley, B.A. (2012). _A ground motion selection algorithm based on the generalized conditional intensity measure approach_. Soil Dynamics and Earthquake Engineering 40, 48-61.
 
 ##Developing:
-The backend is written in Python 2.7 and runs on [Google App Engine](https://developers.google.com/appengine/downloads#Google_App_Engine_SDK_for_Python).
+All of the code is client-side, so the application can be served by any standard server such as Apache.
 
 The frontend is written in Javascript and [AngularJS](http://angularjs.org/).
 
