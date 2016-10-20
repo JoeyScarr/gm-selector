@@ -12,7 +12,7 @@ All of the code is client-side, so the application can be served by any standard
 The frontend is written in Javascript and [AngularJS](http://angularjs.org/).
 
 ##Testing:
-The tests are written in [Jasmine](http://pivotal.github.io/jasmine/) and run on [Karma](http://karma-runner.github.io/).
+The tests are written in [Jasmine](https://jasmine.github.io/) and run on [Karma](http://karma-runner.github.io/).
 
 You will need to install [Node.js](http://nodejs.org/) and run the following commands:
 
